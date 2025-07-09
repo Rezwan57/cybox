@@ -1,0 +1,85 @@
+'use client'
+import React, { useState } from 'react'
+import Image from 'next/image'
+
+
+interface DockProps {
+  onAppClick?: (app: string) => void
+  openApps: string[]
+}
+
+const icons = [
+  { name: 'Home', icon: '/Icons/Home.svg' },
+  { name: 'File Manager', icon: '/Icons/FileManager.svg' },
+  { name: 'Console', icon: '/Icons/Console.svg' },
+  { name: 'Settings', icon: '/Icons/Setting.svg' },
+  { name: 'Mail', icon: '/Icons/Mail.svg' },
+  { name: 'Bank', icon: '/Icons/Bank.svg' },
+  { name: 'Browser', icon: '/Icons/Browser.svg' },
+  { name: 'Whiteboard', icon: '/Icons/Whiteboard.svg' },
+]
+
+const Dock: React.FC<DockProps> = ({ onAppClick, openApps }) => {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [isClicked, setIsClicked] = useState<number | null>(null)
+
+  const handleClick = (index: number) => {
+    setIsClicked(index)
+    setTimeout(() => setIsClicked(null), 150)
+  }
+
+  return (
+    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex gap-4 bg-black/50 backdrop-blur-md p-3 pb-1 rounded-3xl shadow-2xl transform-gpu border-2 border-[#30f160]">
+      {icons.map((Icon, index) => {
+        const isOpen = openApps.includes(Icon.name)
+        const isClickedHere = isClicked === index
+
+        let scale = 'scale-100 translate-y-0 px-0 duration-200'
+        if (hoveredIndex === index) {
+          scale = 'scale-[1.3] -translate-y-5 px-2 duration-100'
+        } else if (hoveredIndex === index - 1 || hoveredIndex === index + 1) {
+          scale = 'scale-[1.2] -translate-y-3 px-1 duration-200'
+        } else if (hoveredIndex === index - 2 || hoveredIndex === index + 2) {
+          scale = 'scale-[1.1] -translate-y-1 px-1 duration-300'
+        }
+
+        if (isClickedHere) {
+          scale = 'scale-[1.0] translate-y-0 px-0 duration-150'
+        }
+
+        return (
+          <button
+            key={index}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+            onClick={() => {
+              onAppClick?.(Icon.name)
+              handleClick(index)
+            }}
+            className={`flex flex-col items-center gap-1 relative transform-gpu will-change-transform transition-all ease-in-out cursor-pointer ${scale}`}
+          >
+            <Image
+              src={Icon.icon}
+              alt={Icon.name}
+              width={60}
+              height={60}
+              className="rounded-xl border-2 border-[#30f160]"
+              priority
+            />
+
+            {/* Dot indicator for open apps */}
+            {isOpen && (
+              <div className="w-[6px] h-[6px] rounded-full shadow-2xl shadow-black bg-white" />
+            )}
+            {!isOpen && (
+              <div className="mt-2 " />
+            )}
+          </button>
+        )
+      })}
+    </nav>
+  )
+}
+
+export default Dock
+
