@@ -1,0 +1,32 @@
+.starting-scene {
+  @apply fixed inset-0 bg-black text-green-400 flex items-center justify-center z-50;
+  font-family: monospace;
+}
+
+.terminal-text {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.typewriter {
+  overflow: hidden;
+  border-right: 0.15em solid green;
+  white-space: nowrap;
+  animation: typing 2s steps(20, end), blinkCaret 0.75s step-end infinite;
+}
+
+.blinking-cursor {
+  animation: blink 1s step-end infinite;
+  font-size: 1.5rem;
+  margin-left: 5px;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 14ch }
+}
+
+@keyframes blink {
+  50% { opacity: 0 }
+}

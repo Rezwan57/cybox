@@ -26,7 +26,7 @@ export default function AppWindow({
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [isMaximized, setIsMaximized] = useState(false)
-  const [size, setSize] = useState({ width: 600, height: 400 })
+  const [size, setSize] = useState({ width: 800, height: 600 })
 
   const windowRef = useRef<HTMLDivElement>(null)
   const resizingRef = useRef(false)

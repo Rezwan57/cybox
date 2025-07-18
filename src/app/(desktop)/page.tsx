@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React from "react";
+import Image from "next/image";
 
 export default function Page() {
   const router = useRouter();
@@ -19,10 +20,12 @@ export default function Page() {
 
   return (
     <div className="relative flex flex-col items-center justify-center h-screen bg-no-repeat bg-cover bg-center">
-      <img
-        src="/wallpaper/wallpaper.jpg"
+      <Image
+        src="/wallpaper/wallpaper.png"
         alt="Logo"
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-screen w-screen blur-md"
+        width={1920}
+        height={1080}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-screen h-screen object-cover blur-3xl opacity-50"
       />
 
       <form

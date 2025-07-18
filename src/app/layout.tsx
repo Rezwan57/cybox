@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import AppWrapper from "../Context/AppWrapper";
 
-// Declare local fonts
 const localFontBold = localFont({
   src: "./fonts/Bold.ttf",
   variable: "--font-bold",
-  weight: "700", // Add weight if needed
+  weight: "700",
   display: "swap",
 });
 
@@ -39,7 +39,9 @@ export default function RootLayout({
       <body
         className={`${localFontBold.variable} ${localFontItalic.variable} ${localFontRegular.variable}`}
       >
-        {children}
+        <AppWrapper>
+          {children}
+        </AppWrapper>
       </body>
     </html>
   );

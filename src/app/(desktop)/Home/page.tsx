@@ -1,19 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Header from "@/components/desktop/header";
 import Dock from "@/components/desktop/Dock";
 import AppWindow from "@/components/desktop/AppWindow";
 import Console from "../../apps/Console";
 import FileManager from "../../apps/FileManager";
-// import Mail from "../../apps/Mail";
+import EmailApp from "../../apps/EmailApp";
+import BankApp from "../../apps/BankApp";
 // import Browser from "../../apps/Browser";
-// import Settings from "../../apps/Settings";
-// import Whiteboard from "../../apps/Whiteboard";
+import Settings from "../../apps/Settings";
+import WhiteBoard from "../../apps/WhiteBoard";
 import { AnimatePresence } from "framer-motion";
 
-type AppName = 'Console' | 'File Manager' | 'Browser' | 'Mail' | 'Settings' | 'Whiteboard'
+type AppName = 'Console' | 'File Manager' | 'Browser' | 'Mail' | 'Settings' | 'WhiteBoard' | 'Bank';
 
 
 interface AppState {
@@ -25,6 +26,11 @@ export default function Home() {
   const [apps, setApps] = useState<Record<string, AppState>>({
     Console: { isOpen: false, isMinimized: false },
     "File Manager": { isOpen: false, isMinimized: false },
+    Mail: { isOpen: false, isMinimized: false },
+    Bank: { isOpen: false, isMinimized: false },
+    // Browser: { isOpen: false, isMinimized: false },
+    Settings: { isOpen: false, isMinimized: false },
+    WhiteBoard: { isOpen: false, isMinimized: false },
   });
 
   const openApp = (app: string) => {
@@ -54,6 +60,22 @@ export default function Home() {
       [app]: { ...prev[app], isMinimized: false },
     }));
   };
+const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+// useEffect(() => {
+//   const disableContextMenu = (e: MouseEvent) => e.preventDefault();
+//   window.addEventListener('contextmenu', disableContextMenu);
+//   return () => window.removeEventListener('contextmenu', disableContextMenu);
+// }, []);
+
+// const handleRightClick = (e: React.MouseEvent) => {
+//   e.preventDefault();
+//   setContextMenu({ x: e.clientX, y: e.clientY });
+// };
+
+// const closeMenu = () => {
+//   setContextMenu(null);
+// };
 
   return (
     <div
@@ -101,7 +123,65 @@ export default function Home() {
           </AppWindow>
         )}
 
-        {/* Add more apps here */}
+        {apps["Mail"].isOpen && (
+          <AppWindow
+            title="Mail"
+            isMinimized={apps["Mail"].isMinimized}
+            onClose={() => closeApp("Mail")}
+            onMinimize={() => minimizeApp("Mail")}
+            onMaximize={() => restoreApp("Mail")}
+          >
+            <EmailApp />
+          </AppWindow>
+        )}
+
+        {apps["Bank"].isOpen && (
+          <AppWindow
+            title="Bank"
+            isMinimized={apps["Bank"].isMinimized}
+            onClose={() => closeApp("Bank")}
+            onMinimize={() => minimizeApp("Bank")}
+            onMaximize={() => restoreApp("Bank")}
+          >
+            <BankApp />
+          </AppWindow>
+        )}
+
+        {/* {apps["Browser"].isOpen && (
+          <AppWindow
+            title="Browser"
+            isMinimized={apps["Browser"].isMinimized}
+            onClose={() => closeApp("Browser")}
+            onMinimize={() => minimizeApp("Browser")}
+            onMaximize={() => restoreApp("Browser")}
+          >
+            <Browser />
+          </AppWindow>
+        )} */}
+
+        {apps["Settings"].isOpen && (
+          <AppWindow
+            title="Settings"
+            isMinimized={apps["Settings"].isMinimized}
+            onClose={() => closeApp("Settings")}
+            onMinimize={() => minimizeApp("Settings")}
+            onMaximize={() => restoreApp("Settings")}
+          >
+            <Settings />
+          </AppWindow>
+        )}
+
+        {apps["WhiteBoard"].isOpen && (
+          <AppWindow
+            title="WhiteBoard"
+            isMinimized={apps["WhiteBoard"].isMinimized}
+            onClose={() => closeApp("WhiteBoard")}
+            onMinimize={() => minimizeApp("WhiteBoard")}
+            onMaximize={() => restoreApp("WhiteBoard")}
+          >
+            <WhiteBoard />
+          </AppWindow>
+        )}
       </main>
     </div>
   );
