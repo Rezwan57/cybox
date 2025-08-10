@@ -1,0 +1,220 @@
+\documentclass{report}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\geometry{a4paper, margin=1in}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Project Cybox: A Gamified Approach to Cybersecurity Education}
+\author{Gemini}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Project Cybox is an innovative, interactive desktop application designed to serve as a cybersecurity sandbox. It provides a gamified and simulated desktop environment where users can learn and apply cybersecurity principles in a safe, controlled setting. By simulating a complete operating system with various applications, Cybox bridges the gap between theoretical knowledge and practical, hands-on experience. This thesis details the architecture, implementation, and features of Project Cybox, showcasing its potential as a powerful educational tool for the next generation of cybersecurity professionals.
+\end{abstract}
+
+\tableofcontents
+
+\chapter{Introduction}
+
+\section{Problem Statement}
+The field of cybersecurity is rapidly evolving, with an increasing demand for skilled professionals. However, traditional educational methods often focus on theoretical concepts, leaving a gap in practical, hands-on experience. Aspiring cybersecurity professionals need a safe and controlled environment to experiment with security concepts, practice their skills, and understand the real-world implications of cyber threats without causing harm to actual systems.
+
+\section{Project Goals and Objectives}
+Project Cybox aims to address this gap by providing an immersive and gamified learning experience. The primary goals of the project are:
+\begin{itemize}
+    \item To create a realistic, simulated desktop environment that mimics a modern operating system.
+    \item To develop a suite of simulated applications that can be used in various cybersecurity scenarios.
+    \item To provide a safe and sandboxed environment for users to learn and experiment with cybersecurity concepts.
+    \item To create engaging, scenario-based challenges that teach practical skills in areas such as digital forensics, network analysis, and incident response.
+\end{itemize}
+
+\section{Thesis Structure}
+This thesis is organized into the following chapters:
+\begin{itemize}
+    \item \textbf{Chapter 2: System Architecture} describes the high-level architecture of Project Cybox, including the frontend, backend, and database technologies.
+    \item \textbf{Chapter 3: Features and Functionality} provides a detailed overview of the simulated applications and their roles in the cybersecurity gameplay.
+    \item \textbf{Chapter 4: Implementation Details} delves into the technical implementation of the project, with code snippets and explanations of key components.
+    \item \textbf{Chapter 5: Security Considerations} discusses the security measures implemented in Project Cybox to ensure a safe learning environment.
+    \item \textbf{Chapter 6: Gameplay and Scenarios} outlines the scenario-based learning approach and provides examples of challenges that users can undertake.
+    \item \textbf{Chapter 7: Conclusion and Future Work} summarizes the project's achievements and discusses potential future enhancements.
+\end{itemize}
+
+\chapter{System Architecture}
+
+\section{High-Level Overview}
+Project Cybox is a cross-platform desktop application built with a modern technology stack. The architecture is divided into three main components: the frontend, the backend, and the database.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{CYBOX.png}
+    \caption{Project Cybox Logo}
+    \label{fig:logo}
+\end{figure}
+
+\subsection{Frontend}
+The frontend of Project Cybox is developed using Next.js, a popular React framework, and TypeScript for type safety. The user interface is styled with Tailwind CSS, a utility-first CSS framework that allows for rapid development of modern and responsive designs. The frontend is responsible for rendering the simulated desktop environment, including the application windows, dock, and header.
+
+\subsection{Backend}
+The backend is powered by Rust using the Tauri framework. Tauri allows for the creation of secure and performant desktop applications by leveraging web technologies for the frontend and Rust for the backend. The backend handles business logic, database interactions, and communication with the operating system.
+
+\subsection{Database}
+The application utilizes a dual-database approach. A local SQLite database (`cybox.db`) is used for storing user data, application states, and scenario progress for local persistence. For a more robust and scalable solution, a remote MySQL database is also integrated, hosted on Railway. This allows for more complex data relationships and future scalability.
+
+\subsection{Communication}
+Communication between the frontend and backend is handled through Tauri's Inter-Process Communication (IPC) mechanism. The frontend can invoke Rust functions from the backend, and the backend can emit events to the frontend. This allows for seamless integration between the web-based UI and the native backend logic.
+
+\chapter{Features and Functionality}
+
+Project Cybox features a suite of simulated applications, each designed to play a role in the cybersecurity-focused gameplay.
+
+\section{Bank App}
+A simulated online banking application. This application is used in scenarios involving financial fraud, phishing, and transaction analysis. Users can view their balance, transfer funds, and manage their account details.
+
+\section{Browser}
+A web browser for navigating simulated websites. The browser can be used to investigate web-based vulnerabilities, gather information, and is a key component in demonstrating XSS attacks.
+
+\section{Console}
+A command-line terminal for interacting with the simulated operating system. The console allows for tasks like file system navigation, network diagnostics, and running scripts. It includes a variety of simulated commands, such as `ping`, `nmap`, and `netstat`, which are defined in `public/commands.json`.
+
+\section{Email App}
+An email client for receiving and sending messages. The email app is a key component in phishing and social engineering scenarios.
+
+\section{File Manager}
+A graphical file explorer for navigating the simulated file system. The file manager is used for digital forensics and locating critical files.
+
+\section{Settings}
+An application for configuring the simulated OS. The settings app may contain vulnerabilities or misconfigurations for the user to discover and exploit.
+
+\section{Task App \& Whiteboard}
+Tools for organization and planning. The Task App allows users to track their progress through various cybersecurity challenges, while the Whiteboard provides a space for learning and strategizing.
+
+\section{CybStore}
+A simulated app store where users can "purchase" and install new applications and tools using points earned from completing challenges.
+
+\chapter{Implementation Details}
+
+\section{Frontend Implementation}
+The frontend is built with React and Next.js, using TypeScript for type safety. State management is handled with React Hooks and the Context API.
+
+\subsection{Component-Based Architecture}
+The UI is broken down into reusable components. The main components are:
+\begin{itemize}
+    \item \textbf{AppWindow.tsx}: A draggable and resizable window component that hosts each application.
+    \item \textbf{Dock.tsx}: The application dock at the bottom of the screen.
+    \item \textbf{header.jsx}: The header bar at the top of the screen.
+\end{itemize}
+
+\subsection{UI/UX Design}
+The UI is designed to be modern and intuitive, mimicking a real desktop environment. Tailwind CSS is used for styling, and Framer Motion is used for animations to create a fluid and engaging user experience.
+
+\lstinputlisting[language=tsx, caption=AppWindow.tsx]{../src/components/desktop/AppWindow.tsx}
+
+\section{Backend Implementation}
+The backend is written in Rust and uses the Tauri framework.
+
+\subsection{Database Interaction}
+The backend interacts with both SQLite and MySQL databases. The `rusqlite` crate is used for SQLite, and the `mysql` crate is used for MySQL. The `db.rs` file contains the logic for establishing database connections.
+
+\lstinputlisting[language=Rust, caption=db.rs]{../src-tauri/src/db.rs}
+
+\subsection{API Handlers}
+The backend exposes several commands that can be invoked from the frontend. These commands are defined in the `handlers` module and include functionalities for user account management, banking operations, and authentication.
+
+\lstinputlisting[language=Rust, caption=handlers/account.rs]{../src-tauri/src/handlers/account.rs}
+
+\section{Database Schema}
+The database schema defines the structure of the user and bank account data.
+
+\lstinputlisting[language=SQL, caption=schema.sql]{../sql/schema.sql}
+
+\chapter{Security Considerations}
+
+\section{Sandboxing}
+Tauri provides a secure, sandboxed environment by default. The frontend webview runs in a separate process from the backend, and communication is restricted to the exposed IPC commands. This prevents web content from accessing the user's system directly.
+
+\section{Password Hashing}
+User passwords are not stored in plaintext. They are hashed using the SHA-256 algorithm before being stored in the database.
+
+\lstinputlisting[language=Rust, caption=utils/crypto.rs]{../src-tauri/src/utils/crypto.rs}
+
+\section{Educational Vulnerabilities}
+A key feature of Cybox is its ability to demonstrate common web vulnerabilities in a safe environment. The application intentionally includes simulated vulnerabilities such as SQL Injection and Cross-Site Scripting (XSS) for educational purposes. These are confined to the simulated environment and do not pose any risk to the user's actual system.
+
+\chapter{Gameplay and Scenarios}
+
+\section{Scenario-Based Learning}
+The core of the Cybox experience is its scenario-based learning approach. Users are presented with a series of challenges and missions that require them to utilize the available applications to investigate and resolve cybersecurity incidents.
+
+\section{Example Scenarios}
+\begin{itemize}
+    \item \textbf{Digital Forensics}: Analyzing files and system logs to uncover evidence of unauthorized access.
+    \item \textbf{Network Analysis}: Monitoring network traffic to identify malicious activity using the console commands.
+    \item \textbf{Vulnerability Assessment}: Discovering and exploiting weaknesses in the simulated system and applications, such as the SQLi and XSS vulnerabilities.
+    \item \textbf{Incident Response}: Responding to simulated security breaches and mitigating their impact.
+\end{itemize}
+
+\section{Console Commands}
+The console provides a variety of simulated commands to aid in the scenarios. These commands are defined in `public/commands.json`.
+
+\lstinputlisting[language=json, caption=commands.json]{../public/commands.json}
+
+\chapter{Conclusion and Future Work}
+
+\section{Conclusion}
+Project Cybox successfully demonstrates the potential of a gamified, simulated environment for cybersecurity education. By providing a safe and engaging platform for hands-on learning, Cybox can help bridge the gap between theoretical knowledge and practical skills. The project's modular architecture and modern technology stack make it a flexible and extensible platform for future development.
+
+\section{Future Work}
+There are several avenues for future development:
+\begin{itemize}
+    \item \textbf{Advanced Scenarios}: Creating more complex and multi-stage cybersecurity challenges.
+    \item \textbf{New Applications}: Adding more simulated applications to broaden the scope of the gameplay.
+    \item \textbf{Multiplayer Mode}: Implementing collaborative scenarios where users can work together to solve incidents.
+    \item \textbf{Customization}: Allowing users to create and share their own cybersecurity scenarios.
+\end{itemize}
+
+\appendix
+\chapter{Source Code}
+This appendix contains the full source code for some of the key files in the project.
+
+\section{main.rs}
+\lstinputlisting[language=Rust, caption=main.rs]{../src-tauri/src/main.rs}
+
+\section{Home.tsx}
+\lstinputlisting[language=tsx, caption=Home.tsx]{../src/app/(desktop)/Home/page.tsx}
+
+\end{document}

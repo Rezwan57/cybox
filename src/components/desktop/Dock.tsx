@@ -10,13 +10,14 @@ interface DockProps {
 
 const icons = [
   { name: 'Home', icon: '/Icons/Home.svg' },
-  { name: 'File Manager', icon: '/Icons/FileManager.svg' },
+  { name: 'Files', icon: '/Icons/FileManager.svg' },
   { name: 'Console', icon: '/Icons/Console.svg' },
   { name: 'Settings', icon: '/Icons/Setting.svg' },
   { name: 'Mail', icon: '/Icons/Mail.svg' },
   { name: 'Bank', icon: '/Icons/Bank.svg' },
   { name: 'Browser', icon: '/Icons/Browser.svg' },
-  { name: 'WhiteBoard', icon: '/Icons/Whiteboard.svg' },
+  { name: 'CybStore', icon: '/Icons/CybStore.svg' },
+  { name: 'Task', icon: '/Icons/Task.svg' },
 ]
 
 const Dock: React.FC<DockProps> = ({ onAppClick, openApps }) => {
@@ -29,7 +30,7 @@ const Dock: React.FC<DockProps> = ({ onAppClick, openApps }) => {
   }
 
   return (
-    <nav className="fixed bottom-2 left-1/2 -translate-x-1/2 z-50 flex gap-4 bg-black/50 backdrop-blur-md p-3 pb-1 rounded-[20px] shadow-2xl transform-gpu border-2 border-[#30f160]">
+    <nav className="fixed bottom-2 left-1/2 -translate-x-1/2 z-50 flex gap-4 bg-black/20 backdrop-blur-md p-3 pb-1 rounded-[20px] shadow-2xl transform-gpu border-2 border-teal-400">
       {icons.map((Icon, index) => {
         const isOpen = openApps.includes(Icon.name)
         const isClickedHere = isClicked === index
@@ -48,33 +49,37 @@ const Dock: React.FC<DockProps> = ({ onAppClick, openApps }) => {
         }
 
         return (
-          <button
-            key={index}
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
-            onClick={() => {
-              onAppClick?.(Icon.name)
-              handleClick(index)
-            }}
-            className={`flex flex-col items-center gap-1 relative transform-gpu will-change-transform transition-all ease-in-out cursor-pointer ${scale}`}
-          >
-            <Image
-              src={Icon.icon}
-              alt={Icon.name}
-              width={55}
-              height={55}
-              className="rounded-[12px] border-2 border-[#30f160]"
-              priority
-            />
+          <div key={index} className="relative flex flex-col items-center">
+            <button
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              onClick={() => {
+                onAppClick?.(Icon.name)
+                handleClick(index)
+              }}
+              className={`flex flex-col items-center gap-1 relative transform-gpu will-change-transform transition-all ease-in-out cursor-pointer ${scale}`}
+            >
+              <Image
+                src={Icon.icon}
+                alt={Icon.name}
+                width={55}
+                height={55}
+                className="rounded-[12px] border-2 border-teal-400"
+                priority
+              />
 
-            {/* Dot indicator for open apps */}
-            {isOpen && (
-              <div className="w-[6px] h-[6px] rounded-full shadow-2xl shadow-black bg-white" />
+              {/* Dot indicator for open apps */}
+              {isOpen && (
+                <div className="w-[6px] h-[6px] rounded-full shadow-2xl shadow-black bg-white" />
+              )}
+              {!isOpen && <div className="mt-2 " />}
+            </button>
+            {hoveredIndex === index && (
+              <div className="absolute -top-14  bg-black/80 text-white text-xs px-2 py-1 rounded-md">
+                {Icon.name}
+              </div>
             )}
-            {!isOpen && (
-              <div className="mt-2 " />
-            )}
-          </button>
+          </div>
         )
       })}
     </nav>

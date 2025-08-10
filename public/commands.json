@@ -1,0 +1,63 @@
+
+[
+    {
+        "name": "ping",
+        "description": "Send ICMP ECHO_REQUEST to network hosts.",
+        "usage": "ping [destination]"
+    },
+    {
+        "name": "nmap",
+        "description": "Network exploration tool and security / port scanner.",
+        "usage": "nmap [scan type] [options] {target specification}"
+    },
+    {
+        "name": "netstat",
+        "description": "Print network connections, routing tables, interface statistics, masquerade connections, and multicast memberships.",
+        "usage": "netstat [options]"
+    },
+    {
+        "name": "ipconfig",
+        "description": "Display current TCP/IP network configuration values.",
+        "usage": "ipconfig"
+    },
+    {
+        "name": "whois",
+        "description": "Client for the whois directory service.",
+        "usage": "whois [domain]"
+    },
+    {
+        "name": "nslookup",
+        "description": "Query Internet name servers interactively.",
+        "usage": "nslookup [domain]"
+    },
+    {
+        "name": "traceroute",
+        "description": "Print the route packets trace to network host.",
+        "usage": "traceroute [host]"
+    },
+    {
+        "name": "hashcat",
+        "description": "Advanced password recovery utility.",
+        "usage": "hashcat [options] hash|hashfile|hccapxfile [dictionary|mask|directory]"
+    },
+    {
+        "name": "john",
+        "description": "John the Ripper password cracker.",
+        "usage": "john [options] [password files]"
+    },
+    {
+        "name": "metasploit",
+        "description": "Advanced open-source platform for developing, testing, and using exploit code.",
+        "usage": "msfconsole"
+    },
+    {
+        "name": "wireshark",
+        "description": "Network protocol analyzer.",
+        "usage": "wireshark"
+    },
+    {
+        "name": "aircrack-ng",
+        "description": "WEP and WPA-PSK keys cracking program.",
+        "usage": "aircrack-ng [options] <.cap file(s)>"
+    }
+]

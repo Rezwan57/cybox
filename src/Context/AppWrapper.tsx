@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import StaringScreen from "../components/Screens/StartingScreen"; 
+import { useState, useEffect, createContext, useContext } from "react";
+import StaringScreen from "../components/Screens/StartingScreen";
+import { DBProvider } from "./DBContext"; // Import DBProvider
+
+export const AppContext = createContext({ points: 0, setPoints: (points: any) => {} });
 
 export default function AppWrapper({
   children,
@@ -10,6 +13,7 @@ export default function AppWrapper({
 }) {
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [hasShownLoading, setHasShownLoading] = useState(false);
+  const [points, setPoints] = useState(1000);
 
   useEffect(() => {
     // Check if loading has been shown before in this session
@@ -49,8 +53,16 @@ export default function AppWrapper({
 
   // Show loading animation only if it hasn't been shown before
   if (isAppLoading && !hasShownLoading) {
-    return <StaringScreen />;
+    return <StaringScreen onFinished={function (): void {
+      throw new Error("Function not implemented.");
+    } } />;
   }
 
-  return <>{children}</>;
+  return (
+    <DBProvider>
+      <AppContext.Provider value={{ points, setPoints }}>
+        {children}
+      </AppContext.Provider>
+    </DBProvider>
+  );
 }

@@ -1,7 +1,12 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { motion, useMotionValue, AnimatePresence } from 'framer-motion'
+import {
+  motion,
+  useMotionValue,
+  AnimatePresence,
+  useDragControls,
+} from 'framer-motion'
 import { RxCross2 } from 'react-icons/rx'
 import { FaRegWindowMinimize } from 'react-icons/fa'
 import { TbArrowsMaximize, TbArrowsDiagonalMinimize2 } from 'react-icons/tb'
@@ -15,6 +20,16 @@ interface AppWindowProps {
   children: React.ReactNode
 }
 
+type ResizeDirection =
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right'
+
 export default function AppWindow({
   title,
   isMinimized,
@@ -23,13 +38,12 @@ export default function AppWindow({
   onMaximize,
   children,
 }: AppWindowProps) {
-  const [isDragging, setIsDragging] = useState(false)
-  const [isResizing, setIsResizing] = useState(false)
   const [isMaximized, setIsMaximized] = useState(false)
   const [size, setSize] = useState({ width: 800, height: 600 })
 
   const windowRef = useRef<HTMLDivElement>(null)
   const resizingRef = useRef(false)
+  const dragControls = useDragControls()
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -41,28 +55,49 @@ export default function AppWindow({
     }
   }, [isMaximized, x, y])
 
-  const startResizing = (e: React.MouseEvent) => {
+  const startResizing = (e: React.MouseEvent, direction: ResizeDirection) => {
     if (isMaximized) return
     e.preventDefault()
     e.stopPropagation()
     resizingRef.current = true
-    setIsResizing(true)
 
     const startX = e.clientX
     const startY = e.clientY
     const startWidth = size.width
     const startHeight = size.height
+    const startWindowX = x.get()
+    const startWindowY = y.get()
 
     const onMouseMove = (e: MouseEvent) => {
       if (!resizingRef.current) return
-      const newWidth = Math.max(300, startWidth + (e.clientX - startX))
-      const newHeight = Math.max(200, startHeight + (e.clientY - startY))
+
+      const dx = e.clientX - startX
+      const dy = e.clientY - startY
+
+      let newWidth = size.width
+      let newHeight = size.height
+
+      if (direction.includes('right')) {
+        newWidth = Math.max(800, startWidth + dx)
+      }
+      if (direction.includes('left')) {
+        newWidth = Math.max(800, startWidth - dx)
+        x.set(startWindowX + dx)
+      }
+
+      if (direction.includes('bottom')) {
+        newHeight = Math.max(600, startHeight + dy)
+      }
+      if (direction.includes('top')) {
+        newHeight = Math.max(600, startHeight - dy)
+        y.set(startWindowY + dy)
+      }
+
       setSize({ width: newWidth, height: newHeight })
     }
 
     const onMouseUp = () => {
       resizingRef.current = false
-      setIsResizing(false)
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     }
@@ -104,10 +139,10 @@ export default function AppWindow({
       {!isMinimized && (
         <motion.div
           ref={windowRef}
-          drag={!isMaximized && !isResizing}
+          drag={!isMaximized}
+          dragControls={dragControls}
+          dragListener={false}
           dragMomentum={false}
-          onDragStart={() => setIsDragging(true)}
-          onDragEnd={() => setIsDragging(false)}
           variants={windowVariants}
           initial="hidden"
           animate="visible"
@@ -134,9 +169,8 @@ export default function AppWindow({
             zIndex: 40,
             backgroundColor: 'rgba(0,0,0,0.5)',
             backdropFilter: 'blur(30px)',
-            border: '1.5px solid #30f160',
+            border: '3px solid var(--primary)',
             overflow: 'hidden',
-            cursor: isDragging ? 'grabbing' : 'default',
             willChange: 'transform, width, height',
             WebkitUserSelect: 'none',
             userSelect: 'none',
@@ -145,16 +179,24 @@ export default function AppWindow({
           {/* Title Bar */}
           <div
             className="grid grid-cols-3 items-center justify-between px-2 py-2 cursor-move w-full"
-            onPointerDown={(e) => e.stopPropagation()}
+            onPointerDown={e => {
+              if (!isMaximized) dragControls.start(e)
+            }}
           >
             <span className="col-start-2 justify-self-center font-medium text-gray-100">
               {title}
             </span>
             <div className="col-start-3 justify-self-end flex items-center gap-3">
-              <button onClick={handleMinimize} className="text-white mr-2 cursor-pointer">
+              <button
+                onClick={handleMinimize}
+                className="text-white mr-2 cursor-pointer"
+              >
                 <FaRegWindowMinimize size={15} />
               </button>
-              <button onClick={toggleMaximize} className="text-white cursor-pointer">
+              <button
+                onClick={toggleMaximize}
+                className="text-white cursor-pointer"
+              >
                 {isMaximized ? (
                   <TbArrowsDiagonalMinimize2 size={18} />
                 ) : (
@@ -172,14 +214,44 @@ export default function AppWindow({
             {children}
           </div>
 
-          {/* Resize Handle */}
+          {/* Resize Handles */}
           {!isMaximized && (
-            <div
-              onMouseDown={startResizing}
-              className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-50"
-            >
-              <div className="w-full h-full bg-white/40 rounded-tr" />
-            </div>
+            <>
+              {/* Corners */}
+              <div
+                onMouseDown={e => startResizing(e, 'top-left')}
+                className="absolute -top-1 -left-1 w-4 h-4 cursor-nwse-resize z-50"
+              />
+              <div
+                onMouseDown={e => startResizing(e, 'top-right')}
+                className="absolute -top-1 -right-1 w-4 h-4 cursor-nesw-resize z-50"
+              />
+              <div
+                onMouseDown={e => startResizing(e, 'bottom-left')}
+                className="absolute -bottom-1 -left-1 w-4 h-4 cursor-nesw-resize z-50"
+              />
+              <div
+                onMouseDown={e => startResizing(e, 'bottom-right')}
+                className="absolute -bottom-1 -right-1 w-4 h-4 cursor-nwse-resize z-50"
+              />
+              {/* Edges */}
+              <div
+                onMouseDown={e => startResizing(e, 'top')}
+                className="absolute -top-1 left-0 w-full h-2 cursor-ns-resize z-50"
+              />
+              <div
+                onMouseDown={e => startResizing(e, 'bottom')}
+                className="absolute -bottom-1 left-0 w-full h-2 cursor-ns-resize z-50"
+              />
+              <div
+                onMouseDown={e => startResizing(e, 'left')}
+                className="absolute top-0 -left-1 w-2 h-full cursor-ew-resize z-50"
+              />
+              <div
+                onMouseDown={e => startResizing(e, 'right')}
+                className="absolute top-0 -right-1 w-2 h-full cursor-ew-resize z-50"
+              />
+            </>
           )}
         </motion.div>
       )}

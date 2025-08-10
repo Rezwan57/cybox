@@ -73,7 +73,7 @@ function Header() {
         >
           {time}
           {showCalendar && (
-            <div className="absolute top-8 left-0 bg-pink-300 bg-opacity-30 h-auto w-auto">
+            <div className="absolute top-8 left-0 bg-black border border-primary w-auto">
               <Calendar className="h-full w-full bg-opacity-p backdrop-blur" />
             </div>
           )}

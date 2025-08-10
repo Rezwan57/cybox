@@ -24,6 +24,13 @@ const localFontRegular = localFont({
   display: "swap",
 });
 
+const localFontPoints = localFont({
+  src: "./fonts/points.otf",
+  variable: "--font-points",
+  weight: "400",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "My App",
   description: "Cybersecurity Game",
@@ -37,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${localFontBold.variable} ${localFontItalic.variable} ${localFontRegular.variable}`}
+        className={`${localFontBold.variable} ${localFontItalic.variable} ${localFontRegular.variable} ${localFontPoints.variable}`}
       >
         <AppWrapper>
           {children}

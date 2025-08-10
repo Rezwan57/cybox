@@ -9,12 +9,14 @@ import Console from "../../apps/Console";
 import FileManager from "../../apps/FileManager";
 import EmailApp from "../../apps/EmailApp";
 import BankApp from "../../apps/BankApp";
-// import Browser from "../../apps/Browser";
+import Browser from "../../apps/Browser";
 import Settings from "../../apps/Settings";
 import WhiteBoard from "../../apps/WhiteBoard";
+import TaskApp from "../../apps/TaskApp";
+import CybStore from "../../apps/CybStore";
 import { AnimatePresence } from "framer-motion";
 
-type AppName = 'Console' | 'File Manager' | 'Browser' | 'Mail' | 'Settings' | 'WhiteBoard' | 'Bank';
+type AppName = 'Console' | 'Files' | 'Browser' | 'Mail' | 'Settings' | 'WhiteBoard' | 'Bank' | 'Task' | 'CybStore';
 
 
 interface AppState {
@@ -25,12 +27,14 @@ interface AppState {
 export default function Home() {
   const [apps, setApps] = useState<Record<string, AppState>>({
     Console: { isOpen: false, isMinimized: false },
-    "File Manager": { isOpen: false, isMinimized: false },
+    Files: { isOpen: false, isMinimized: false },
     Mail: { isOpen: false, isMinimized: false },
     Bank: { isOpen: false, isMinimized: false },
-    // Browser: { isOpen: false, isMinimized: false },
+    Browser: { isOpen: false, isMinimized: false },
     Settings: { isOpen: false, isMinimized: false },
     WhiteBoard: { isOpen: false, isMinimized: false },
+    Task: { isOpen: false, isMinimized: false },
+    CybStore: { isOpen: false, isMinimized: false },
   });
 
   const openApp = (app: string) => {
@@ -111,13 +115,13 @@ const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(
           </AppWindow>
         )}
 
-        {apps["File Manager"].isOpen && (
+        {apps["Files"].isOpen && (
           <AppWindow
-            title="File Manager"
-            isMinimized={apps["File Manager"].isMinimized}
-            onClose={() => closeApp("File Manager")}
-            onMinimize={() => minimizeApp("File Manager")}
-            onMaximize={() => restoreApp("File Manager")}
+            title="Files"
+            isMinimized={apps["Files"].isMinimized}
+            onClose={() => closeApp("Files")}
+            onMinimize={() => minimizeApp("Files")}
+            onMaximize={() => restoreApp("Files")}
           >
             <FileManager />
           </AppWindow>
@@ -147,7 +151,7 @@ const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(
           </AppWindow>
         )}
 
-        {/* {apps["Browser"].isOpen && (
+        {apps["Browser"].isOpen && (
           <AppWindow
             title="Browser"
             isMinimized={apps["Browser"].isMinimized}
@@ -157,7 +161,7 @@ const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(
           >
             <Browser />
           </AppWindow>
-        )} */}
+        )}
 
         {apps["Settings"].isOpen && (
           <AppWindow
@@ -171,15 +175,29 @@ const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(
           </AppWindow>
         )}
 
-        {apps["WhiteBoard"].isOpen && (
+        
+
+        {apps["Task"].isOpen && (
           <AppWindow
-            title="WhiteBoard"
-            isMinimized={apps["WhiteBoard"].isMinimized}
-            onClose={() => closeApp("WhiteBoard")}
-            onMinimize={() => minimizeApp("WhiteBoard")}
-            onMaximize={() => restoreApp("WhiteBoard")}
+            title="Task"
+            isMinimized={apps["Task"].isMinimized}
+            onClose={() => closeApp("Task")}
+            onMinimize={() => minimizeApp("Task")}
+            onMaximize={() => restoreApp("Task")}
           >
-            <WhiteBoard />
+            <TaskApp />
+          </AppWindow>
+        )}
+
+        {apps["CybStore"].isOpen && (
+          <AppWindow
+            title="CybStore"
+            isMinimized={apps["CybStore"].isMinimized}
+            onClose={() => closeApp("CybStore")}
+            onMinimize={() => minimizeApp("CybStore")}
+            onMaximize={() => restoreApp("CybStore")}
+          >
+            <CybStore />
           </AppWindow>
         )}
       </main>

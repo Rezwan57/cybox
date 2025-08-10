@@ -187,7 +187,7 @@ export default function Console() {
   }, [lines])
 
   return (
-    <div className="h-full w-full text-green-400 font-mono text-md overflow-hidden shadow-inner flex flex-col">
+    <div className="h-full w-full text-primary font-mono text-md overflow-hidden shadow-inner flex flex-col">
       <div
         ref={containerRef}
         className="flex-1 p-4 overflow-y-auto space-y-1"
@@ -196,18 +196,18 @@ export default function Console() {
           <div key={index}>
             {line.input && (
               <div className='mt-2'>
-                <span className="text-green-400 font-bold">{cwd}&gt; </span>
-                <span className="text-green-400">{line.input}</span>
+                <span className="text-primary font-bold">{cwd}&gt; </span>
+                <span className="text-primary">{line.input}</span>
               </div>
             )}
             {line.output.map((out, i) => (
-              <div key={i} className="text-green-400">{out}</div>
+              <div key={i} className="text-primary">{out}</div>
             ))}
           </div>
         ))}
 
         <form onSubmit={handleSubmit} className="flex items-center">
-          <span className="text-green-400 mr-1 font-bold">PS {cwd}&gt;</span>
+          <span className="text-primary mr-1 font-bold">PS {cwd}&gt;</span>
           <input
             ref={inputRef}
             value={input}
