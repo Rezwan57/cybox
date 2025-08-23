@@ -30,3 +30,68 @@
 @keyframes blink {
   50% { opacity: 0 }
 }
+
+/* Styles for StartingScreen.tsx */
+.screen-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1a1a1a; /* Dark background */
+  color: #e0e0e0; /* Light text color */
+  font-family: 'Regular', sans-serif; /* Assuming 'Regular' font is available */
+  overflow: hidden;
+}
+
+.screen-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px;
+  background-color: #2a2a2a; /* Slightly lighter background for content */
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 1.5s ease-out;
+}
+
+.screen-content .title {
+  font-family: 'Bold', sans-serif; /* Assuming 'Bold' font is available */
+  font-size: 3.5em;
+  color: #4CAF50; /* Green accent color */
+  text-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+  margin-bottom: 10px;
+}
+
+.screen-content .loading-text {
+  font-size: 1.2em;
+  color: #bbbbbb;
+}
+
+.loading-bar {
+  width: 250px;
+  height: 8px;
+  background-color: #3a3a3a;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.loading-progress {
+  width: 0%;
+  height: 100%;
+  background-color: #4CAF50;
+  border-radius: 5px;
+  animation: progressBar 2s infinite ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes progressBar {
+  0% { width: 0%; }
+  50% { width: 100%; }
+  100% { width: 0%; }
+}

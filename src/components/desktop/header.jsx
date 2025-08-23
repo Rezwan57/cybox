@@ -5,8 +5,10 @@ import { BiFullscreen, BiExitFullscreen } from "react-icons/bi";
 import { FiBell, FiWifi, FiVolume2, FiSettings, FiLock } from "react-icons/fi";
 import { IoPower } from "react-icons/io5";
 import Calendar from "react-calendar";
+import { useAuth } from "../../Context/AuthContext";
 
 function Header() {
+  const { user, logout } = useAuth();
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [time, setTime] = useState(moment().format("h:mm a"));
   const [showCalendar, setShowCalendar] = useState(false);
@@ -65,6 +67,7 @@ function Header() {
         <FiBell className="cursor-pointer" />
         <FiWifi className="cursor-pointer" />
         <FiVolume2 className="cursor-pointer" />
+        <span className="text-sm"></span>
         <FiSettings className="cursor-pointer" />
 
         <span
@@ -87,10 +90,10 @@ function Header() {
           <IoPower onClick={togglePowerMenu} className="cursor-pointer" />
           {showPowerMenu && (
             <div className="absolute right-0 mt-2 bg-black border-primary backdrop-blur-3xl rounded-xl shadow-lg w-50 p-1">
-              <button className="w-full text-left rounded-md block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <button onClick={logout} className="w-full text-left rounded-md block px-4 py-2 text-sm text-teal-400 hover:bg-teal-900">
                 Logout
               </button>
-              <button className="w-full text-left rounded-md block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 mt-1">
+              <button className="w-full text-left rounded-md block px-4 py-2 text-sm text-teal-400 hover:bg-teal-900 mt-1">
                 Quit
               </button>
             </div>
@@ -102,4 +105,3 @@ function Header() {
 }
 
 export default Header;
-

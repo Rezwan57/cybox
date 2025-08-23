@@ -232,111 +232,30 @@ body {
 	.at-item {
 		
 		animation-name: shake-top;
-		animation-duration: 1.2s;
+		animation-duration: 5s;
 		animation-timing-function: ease-in;
-		animation-delay: 0s;
-		animation-iteration-count: 6;
 		animation-direction: normal;
 		animation-fill-mode: none;
-    transform: scale(0.5);
-			
-		/* shorthand
-		animation: shake-top 1.2s ease-in 0s 6 normal none;*/
+    transform: scale(1);
 	}
 	@keyframes shake-top {
 			
 		0% {
-			
+			filter: blur(100px);
+      transform: scale(0.7);
 		}
-		10% {
-			transform:rotate(2deg);
-		}
-		13% {
-			
-		}
+		
 		20% {
-			transform:rotate(-4deg);
-		}
-		24% {
-			
-		}
-		26% {
-			
-		}
-		28% {
-			
-		}
-		30% {
-			transform:rotate(4deg);
-		}
-		34% {
-			
-		}
-		36% {
-			
-		}
-		40% {
-			transform:rotate(-4deg);
-		}
-		40% {
-			transform:rotate(4deg);
-		}
-		45% {
-			
+			filter: blur(50px);
 		}
 		50% {
-			
+			filter: blur(50px);
 		}
-		52% {
-			
-		}
-		56% {
-			
-		}
-		60% {
-			transform:rotate(-4deg);
-		}
-		65% {
-			
-		}
-		67% {
-			
-		}
-		70% {
-			transform:rotate(4deg);
-		}
-		73% {
-			
-		}
-		76% {
-			transform:rotate(-60deg) ;
-		}
-		78% {
-			
-		}
-		80% {
-			transform:rotate(-2deg);
-		}
-		83% {
-			
-		}
-		85% {
-			
-		}
-		86% {
-			
-		}
-		90% {
-			transform:rotate(2deg);
-		}
-		92% {
-			transform:rotate(0deg) scale(1.5);
-		}
-		97% {
-			transform:rotate(0deg) scale(1.5);
+		50% {
+			filter: blur(50px);
 		}
 		100% {
-			transform:rotate(0deg) scale(1.5);
-			transform-origin:50% 0;
+			filter: blur(0px);
+      transform: scale(1);
 		}
 	}

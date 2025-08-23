@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct BankAccount {
     pub id: u64,
     pub user_id: u64,
+    pub balance: f64,
     pub account_number: String,
     pub card_number: String,
     pub cvc: String,

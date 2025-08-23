@@ -15,6 +15,7 @@ import WhiteBoard from "../../apps/WhiteBoard";
 import TaskApp from "../../apps/TaskApp";
 import CybStore from "../../apps/CybStore";
 import { AnimatePresence } from "framer-motion";
+import { useAuth } from "@/Context/AuthContext"; // Import useAuth
 
 type AppName = 'Console' | 'Files' | 'Browser' | 'Mail' | 'Settings' | 'WhiteBoard' | 'Bank' | 'Task' | 'CybStore';
 
@@ -25,6 +26,7 @@ interface AppState {
 }
 
 export default function Home() {
+  const { user } = useAuth(); // Get the user from the context
   const [apps, setApps] = useState<Record<string, AppState>>({
     Console: { isOpen: false, isMinimized: false },
     Files: { isOpen: false, isMinimized: false },
@@ -66,21 +68,6 @@ export default function Home() {
   };
 const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-// useEffect(() => {
-//   const disableContextMenu = (e: MouseEvent) => e.preventDefault();
-//   window.addEventListener('contextmenu', disableContextMenu);
-//   return () => window.removeEventListener('contextmenu', disableContextMenu);
-// }, []);
-
-// const handleRightClick = (e: React.MouseEvent) => {
-//   e.preventDefault();
-//   setContextMenu({ x: e.clientX, y: e.clientY });
-// };
-
-// const closeMenu = () => {
-//   setContextMenu(null);
-// };
-
   return (
     <div
       className="fixed inset-0 flex items-start justify-center min-h-screen font-[family-name:var(--font-geist-sans)] overflow-hidden"
@@ -93,6 +80,7 @@ const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(
         overflow: "hidden",
       }}
     >
+
       <main className="absolute inset-0 flex min-h-screen flex-col items-center justify-between p-2">
         <Header />
         <Dock

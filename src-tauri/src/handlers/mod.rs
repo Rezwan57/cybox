@@ -1,3 +1,7 @@
-pub mod account;
-pub mod bank;
 pub mod auth;
+pub mod account;
+pub mod service;
+pub mod mail;
+pub mod task;
+pub mod bank;
+pub mod settings;

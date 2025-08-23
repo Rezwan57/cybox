@@ -1,97 +1,120 @@
 'use client'
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaInbox, FaPaperPlane, FaTrash, FaEnvelope, FaEnvelopeOpenText, FaExclamationTriangle, FaLink, FaBan } from 'react-icons/fa';
+import { invoke } from '@tauri-apps/api/core';
+import { useAuth } from '../../Context/AuthContext';
 
 type Email = {
   id: number;
-  from: string;
-  to?: string;
+  user_id: number;
+  universal_email_id: number;
+  is_read: boolean;
+  classification: string;
+  created_at: string;
+  from_user: string;
   subject: string;
   body: string;
-  isRead: boolean;
-  classification: 'none' | 'spam' | 'phishing';
 };
 
-const sampleEmails: Email[] = [
-  {
-    id: 1,
-    from: 'admin@cyberbank.fake',
-    subject: 'Unusual login detected',
-    body: 'We noticed a login from a new device. Click the link below to secure your account: <a href="cybox://bank/login?phishing=true" class="text-blue-400 underline">https://cyberbank.fake/secure</a>',
-    isRead: false,
-    classification: 'none',
-  },
-  {
-    id: 2,
-    from: 'support@securevpn.fake',
-    subject: 'Your subscription has expired',
-    body: 'Renew your VPN today to stay protected. <a href="cybox://settings/network" class="text-blue-400 underline">Renew Now</a>',
-    isRead: false,
-    classification: 'none',
-  },
-  {
-    id: 3,
-    from: 'friend@trustme.fake',
-    subject: 'Check out this awesome game!',
-    body: 'It’s a new hacking simulator. Totally legit ;) Download here: <a href="cybox://filemanager/download/malware.exe" class="text-blue-400 underline">malware.exe</a>',
-    isRead: false,
-    classification: 'none',
-  },
-];
-
 export default function EmailApp() {
-  const [emails, setEmails] = useState<Email[]>(sampleEmails);
+    const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [activeTab, setActiveTab] = useState('inbox');
   const [isComposing, setIsComposing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const { user } = useAuth();
 
-  const openEmail = (id: number) => {
-    const updated = emails.map((email) =>
-      email.id === id ? { ...email, isRead: true } : email
-    );
-    setEmails(updated);
-    setSelectedEmail(updated.find((e) => e.id === id) || null);
-  };
+  useEffect(() => {
+    console.log('EmailApp component mounted');
+    if (user) {
+      console.log('User is available:', user);
+      fetchEmails();
+    } else {
+      console.log('User is not available yet');
+    }
+  }, [user]);
 
-  const deleteEmail = (id: number) => {
-    setEmails(emails.filter(email => email.id !== id));
-    if (selectedEmail && selectedEmail.id === id) {
-      setSelectedEmail(null);
+  const fetchEmails = async () => {
+    if (!user) return;
+    console.log('Fetching emails for user:', user.name);
+    setLoading(true);
+    setError(null);
+    try {
+      const fetchedEmails: Email[] = await invoke('get_emails', { userId: user.id });
+      console.log('Fetched emails:', fetchedEmails);
+      
+      setEmails(fetchedEmails);
+
+    } catch (error) {
+      console.error('Failed to fetch emails:', error);
+      setError('Failed to fetch emails. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const classifyEmail = (id: number, classification: 'spam' | 'phishing') => {
-    const updatedEmails = emails.map(email =>
-      email.id === id ? { ...email, classification } : email
-    );
-    setEmails(updatedEmails);
-    if (selectedEmail && selectedEmail.id === id) {
-      setSelectedEmail({ ...selectedEmail, classification });
+    const openEmail = async (id: number, fromTab: string) => {
+    let emailToOpen: Email | undefined;
+    emailToOpen = emails.find(email => email.id === id);
+
+    if (emailToOpen && !emailToOpen.is_read) {
+      try {
+        await invoke('mark_email_as_read', { emailId: id });
+        const updateEmails = (prevEmails: Email[]) => prevEmails.map(e => e.id === id ? { ...e, is_read: true } : e);
+        setEmails(updateEmails);
+      } catch (error) {
+        console.error('Failed to mark email as read:', error);
+      }
+    }
+    setSelectedEmail(emailToOpen || null);
+  };
+
+  const deleteEmail = async (id: number) => {
+    try {
+      await invoke('delete_email', { emailId: id });
+      setEmails(prevEmails => prevEmails.filter(e => e.id !== id));
+      if (selectedEmail && selectedEmail.id === id) {
+        setSelectedEmail(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete email:', error);
     }
   };
 
-  const handleSendEmail = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const to = (form.elements.namedItem('to') as HTMLInputElement).value;
-    const subject = (form.elements.namedItem('subject') as HTMLInputElement).value;
-    const body = (form.elements.namedItem('body') as HTMLTextAreaElement).value;
+  const classifyEmail = async (id: number, classification: 'spam' | 'phishing') => {
+    try {
+      await invoke('classify_email', { emailId: id, classification });
+      const updateClassification = (prevEmails: Email[]) => prevEmails.map(e => e.id === id ? { ...e, classification } : e);
+      setEmails(updateClassification);
 
-    const newEmail: Email = {
-      id: Date.now(),
-      from: 'you@cybox.dev',
-      to,
-      subject,
-      body,
-      isRead: true,
-      classification: 'none',
-    };
-
-    setEmails([newEmail, ...emails]);
-    setIsComposing(false);
-    setActiveTab('sent');
+      if (selectedEmail && selectedEmail.id === id) {
+        setSelectedEmail({ ...selectedEmail, classification });
+      }
+    } catch (error) {
+      console.error('Failed to classify email:', error);
+    }
   };
+
+  // const handleSendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (!user) return;
+
+  //   const form = e.currentTarget;
+  //   const to = (form.elements.namedItem('to') as HTMLInputElement).value;
+  //   const subject = (form.elements.namedItem('subject') as HTMLInputElement).value;
+  //   const body = (form.elements.namedItem('body') as HTMLTextAreaElement).value;
+
+  //   try {
+  //     await invoke('send_email', { fromUser: user.name, toUser: to, subject, body });
+  //     fetchEmails(); // Refresh emails after sending
+  //     setIsComposing(false);
+  //     setActiveTab('sent');
+  //   } catch (error) {
+  //     console.error('Failed to send email:', error);
+  //   }
+  // };
 
   const addLink = () => {
     const url = prompt("Enter the URL");
@@ -104,7 +127,7 @@ export default function EmailApp() {
   if (isComposing) {
     return (
       <div className="w-full h-full flex flex-col text-white p-6">
-        <form onSubmit={handleSendEmail}>
+        <form /* onSubmit={handleSendEmail} */>
           <h2 className="text-2xl font-bold mb-4">New Email</h2>
           <div className="mb-4">
             <label htmlFor="to" className="block text-sm font-medium text-neutral-400 mb-1">To</label>
@@ -130,6 +153,8 @@ export default function EmailApp() {
     );
   }
 
+  const emailsToDisplay = emails;
+
   return (
     <div className="w-full flex h-full text-white">
       {/* Sidebar */}
@@ -153,31 +178,45 @@ export default function EmailApp() {
       {/* Email List */}
       <div className="w-1/3 border-r border-neutral-700 overflow-y-auto">
         <div className="p-4 font-bold text-xl border-b border-neutral-700">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</div>
-        {emails.filter(email => activeTab === 'inbox' ? !email.to : email.to).map((email) => (
-          <div
-            key={email.id}
-            onClick={() => openEmail(email.id)}
-            className={`cursor-pointer px-4 py-3 border-b border-neutral-700 hover:bg-neutral-800 ${
-              selectedEmail?.id === email.id ? 'bg-neutral-800' : ''
-            } ${
-              email.isRead ? 'text-neutral-400' : 'font-semibold text-white'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {email.isRead ? (
-                  <FaEnvelopeOpenText className="text-neutral-500" />
-                ) : (
-                  <FaEnvelope className="text-blue-500" />
-                )}
-                <div>
-                  <p className="text-sm">{email.from}</p>
-                  <p className="text-xs text-neutral-500">{email.subject}</p>
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-neutral-500">Loading emails...</p>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-red-500">{error}</p>
+          </div>
+        ) : emailsToDisplay.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-neutral-500">No emails found.</p>
+          </div>
+        ) : (
+          emailsToDisplay.map((email) => (
+            <div
+              key={email.id}
+              onClick={() => openEmail(email.id, activeTab)}
+              className={`cursor-pointer px-4 py-3 border-b border-neutral-700 hover:bg-neutral-800 ${
+                selectedEmail?.id === email.id ? 'bg-neutral-800' : ''
+              } ${
+                email.is_read ? 'text-neutral-400' : 'font-semibold text-white'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {email.is_read ? (
+                    <FaEnvelopeOpenText className="text-neutral-500" />
+                  ) : (
+                    <FaEnvelope className="text-blue-500" />
+                  )}
+                  <div>
+                    <p className="text-sm">{email.from_user}</p>
+                    <p className="text-xs text-neutral-500">{email.subject}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Email View */}
@@ -200,11 +239,11 @@ export default function EmailApp() {
             </div>
             <div className="flex items-center gap-4 mb-4 pb-4 border-b border-neutral-700">
               <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-bold text-xl">
-                {selectedEmail.from.charAt(0).toUpperCase()}
+                {selectedEmail.from_user.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="font-semibold text-white">{selectedEmail.from}</p>
-                <p className="text-sm text-neutral-400">To: you@cybox.dev</p>
+                <p className="font-semibold text-white">{selectedEmail.from_user}</p>
+                <p className="text-sm text-neutral-400">To: {user?.name}</p>
               </div>
             </div>
             <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: selectedEmail.body }}></div>
@@ -230,6 +269,3 @@ export default function EmailApp() {
     </div>
   );
 }
-
-
-

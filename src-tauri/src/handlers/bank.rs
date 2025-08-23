@@ -5,6 +5,19 @@ use mysql::{params, prelude::*};
 use tauri::command;
 
 #[command]
+pub fn award_points(user_id: u64, amount: i32) -> Result<(), String> {
+    let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
+    let query = "UPDATE bank_accounts SET balance = balance + :amount WHERE user_id = :user_id";
+    
+    conn.exec_drop(query, params! {
+        "amount" => amount,
+        "user_id" => user_id,
+    }).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
 pub fn create_bank_account(request: CreateBankAccountRequest) -> Result<String, String> {
     let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
 
@@ -33,18 +46,19 @@ pub fn create_bank_account(request: CreateBankAccountRequest) -> Result<String, 
 pub fn get_bank_details(user_id: u64) -> Result<Option<BankAccount>, String> {
     let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
     
-    let query = r"SELECT id, user_id, account_number, card_number, cvc, expiry_date 
+    let query = r"SELECT id, user_id, balance, account_number, card_number, cvc, expiry_date 
                   FROM bank_accounts WHERE user_id = :user_id";
     
-    let result: Option<(u64, u64, String, String, String, String)> = 
+    let result: Option<(u64, u64, f64, String, String, String, String)> = 
         conn.exec_first(query, params! { "user_id" => user_id })
         .map_err(|e| e.to_string())?;
 
     match result {
-        Some((id, user_id, account_number, card_number, cvc, expiry_date)) => {
+        Some((id, user_id, balance, account_number, card_number, cvc, expiry_date)) => {
             Ok(Some(BankAccount {
                 id,
                 user_id,
+                balance,
                 account_number,
                 card_number,
                 cvc,

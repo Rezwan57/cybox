@@ -9,12 +9,12 @@ const StartingScreen: React.FC<{ onFinished: () => void }> = ({ onFinished }) =>
       setProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
-          setTimeout(onFinished, 500); // Wait for fade out
+          setTimeout(onFinished, 800);
           return 100;
         }
         return prev + 1;
       });
-    }, 50); // Adjust speed of loading
+    }, 800);
 
     return () => clearInterval(interval);
   }, [onFinished]);
@@ -33,6 +33,7 @@ const StartingScreen: React.FC<{ onFinished: () => void }> = ({ onFinished }) =>
           className="at-item"
         />
       </div>
+      
     </div>
   );
 };

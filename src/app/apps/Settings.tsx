@@ -1,68 +1,83 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   FaUserShield, 
   FaWifi, 
   FaLock, 
   FaShieldAlt, 
   FaCogs, 
-  FaEye,
-  FaDatabase,
-  FaTerminal,
-  FaBug,
-  FaNetworkWired,
-  FaExclamationTriangle,
-  FaUserSecret,
-  FaKey,
-  FaSkull
 } from 'react-icons/fa'
+import { invoke } from '@tauri-apps/api/core'
+import { useAuth } from '@/Context/AuthContext'
 
-const sections = ['System', 'Account', 'Network', 'Security', 'Monitoring', 'Forensics', 'Advanced'] as const
+// --- TypeScript Interfaces ---
+interface Settings {
+  user_id: number;
+  two_fa: boolean;
+  biometric_auth: boolean;
+  session_timeout: string;
+  login_attempts: string;
+  firewall: boolean;
+  vpn: boolean;
+  usb_protection: boolean;
+  email_filter: boolean;
+  spoofed_mac: string;
+  ip: string;
+  dns: string;
+  wifi: string;
+  proxy_server: string;
+  tor_enabled: boolean;
+  port_scanning: boolean;
+  sandbox_mode: boolean;
+  honeypot: boolean;
+  anti_forensics: boolean;
+  crypto_mining: boolean;
+  kernel_protection: boolean;
+  memory_encryption: boolean;
+  network_monitoring: boolean;
+  keylogger_detection: boolean;
+  behavior_analysis: boolean;
+  traffic_analysis: boolean;
+  evidence_collection: boolean;
+  memory_dumps: boolean;
+  disk_imaging: boolean;
+  encryption_key: string;
+  hash_algorithm: string;
+}
+
+const sections = ['System', 'Account', 'Network', 'Security'] as const
 type Section = (typeof sections)[number]
 
 export default function SettingsApp() {
+  const { user } = useAuth()
   const [activeSection, setActiveSection] = useState<Section>('System')
-  
-  // Account Security
-  const [twoFA, setTwoFA] = useState(false)
-  const [biometricAuth, setBiometricAuth] = useState(true)
-  const [sessionTimeout, setSessionTimeout] = useState('30')
-  const [loginAttempts, setLoginAttempts] = useState('3')
-  
-  // Network & Security
-  const [firewall, setFirewall] = useState(true)
-  const [vpn, setVPN] = useState(false)
-  const [usbProtection, setUsbProtection] = useState(true)
-  const [emailFilter, setEmailFilter] = useState(true)
-  const [spoofedMac, setSpoofedMac] = useState('00:1B:44:11:3A:B7')
-  const [ip, setIP] = useState('192.168.0.101')
-  const [dns, setDNS] = useState('8.8.8.8')
-  const [wifi, setWifi] = useState('CyberNet_WPA2')
-  const [proxyServer, setProxyServer] = useState('127.0.0.1:8080')
-  const [torEnabled, setTorEnabled] = useState(false)
-  const [portScanning, setPortScanning] = useState(false)
-  
-  // Advanced Security
-  const [sandboxMode, setSandboxMode] = useState(false)
-  const [honeypot, setHoneypot] = useState(true)
-  const [antiForensics, setAntiForensics] = useState(false)
-  const [cryptoMining, setCryptoMining] = useState(false)
-  const [kernelProtection, setKernelProtection] = useState(true)
-  const [memoryEncryption, setMemoryEncryption] = useState(false)
-  
-  // Monitoring
-  const [networkMonitoring, setNetworkMonitoring] = useState(true)
-  const [keyloggerDetection, setKeyloggerDetection] = useState(true)
-  const [behaviorAnalysis, setBehaviorAnalysis] = useState(false)
-  const [trafficAnalysis, setTrafficAnalysis] = useState(true)
-  
-  // Forensics
-  const [evidenceCollection, setEvidenceCollection] = useState(false)
-  const [memoryDumps, setMemoryDumps] = useState(false)
-  const [diskImaging, setDiskImaging] = useState(false)
-  
-  const [encryptionKey, setEncryptionKey] = useState('AES-256-GCM')
-  const [hashAlgorithm, setHashAlgorithm] = useState('SHA-256')
+  const [settings, setSettings] = useState<Settings | null>(null)
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      invoke<Settings>('get_settings', { userId: user.id })
+        .then(setSettings)
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, [user]);
+
+  const handleSettingChange = (key: keyof Settings, value: any) => {
+    if (settings) {
+      const newSettings = { ...settings, [key]: value };
+      setSettings(newSettings);
+      invoke('update_settings', { settings: newSettings }).catch(console.error);
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
+  if (!settings) {
+    return <div>Error: Settings not found</div>
+  }
 
   return (
     <div className="flex w-full h-full overflow-hidden text-white">
@@ -121,8 +136,8 @@ export default function SettingsApp() {
                     <span className="text-white">Two-Factor Authentication</span>
                     <input
                       type="checkbox"
-                      checked={twoFA}
-                      onChange={() => setTwoFA(!twoFA)}
+                      checked={settings.two_fa}
+                      onChange={(e) => handleSettingChange('two_fa', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -130,16 +145,16 @@ export default function SettingsApp() {
                     <span className="text-white">Biometric Authentication</span>
                     <input
                       type="checkbox"
-                      checked={biometricAuth}
-                      onChange={() => setBiometricAuth(!biometricAuth)}
+                      checked={settings.biometric_auth}
+                      onChange={(e) => handleSettingChange('biometric_auth', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Session Timeout (minutes)</span>
                     <select
-                      value={sessionTimeout}
-                      onChange={(e) => setSessionTimeout(e.target.value)}
+                      value={settings.session_timeout}
+                      onChange={(e) => handleSettingChange('session_timeout', e.target.value)}
                       className="bg-neutral-700 text-white px-2 py-1 rounded"
                     >
                       <option value="15">15</option>
@@ -152,8 +167,8 @@ export default function SettingsApp() {
                     <span className="text-white">Max Login Attempts</span>
                     <input
                       type="number"
-                      value={loginAttempts}
-                      onChange={(e) => setLoginAttempts(e.target.value)}
+                      value={settings.login_attempts}
+                      onChange={(e) => handleSettingChange('login_attempts', e.target.value)}
                       className="bg-neutral-700 text-white px-2 py-1 rounded w-16"
                       min="1"
                       max="10"
@@ -192,8 +207,8 @@ export default function SettingsApp() {
                   <label className="block">
                     <span className="text-white mb-1 block">Connected Wi-Fi</span>
                     <select
-                      value={wifi}
-                      onChange={(e) => setWifi(e.target.value)}
+                      value={settings.wifi}
+                      onChange={(e) => handleSettingChange('wifi', e.target.value)}
                       className="w-full px-3 py-2 bg-neutral-700 text-white rounded"
                     >
                       <option>CyberNet_WPA2</option>
@@ -207,8 +222,8 @@ export default function SettingsApp() {
                   <label className="block">
                     <span className="text-white mb-1 block">IP Address</span>
                     <input
-                      value={ip}
-                      onChange={(e) => setIP(e.target.value)}
+                      value={settings.ip}
+                      onChange={(e) => handleSettingChange('ip', e.target.value)}
                       className="w-full px-3 py-2 bg-neutral-700 text-white rounded"
                     />
                   </label>
@@ -216,8 +231,8 @@ export default function SettingsApp() {
                   <label className="block">
                     <span className="text-white mb-1 block">DNS Server</span>
                     <input
-                      value={dns}
-                      onChange={(e) => setDNS(e.target.value)}
+                      value={settings.dns}
+                      onChange={(e) => handleSettingChange('dns', e.target.value)}
                       className="w-full px-3 py-2 bg-neutral-700 text-white rounded"
                     />
                   </label>
@@ -225,8 +240,8 @@ export default function SettingsApp() {
                   <label className="block">
                     <span className="text-white mb-1 block">Proxy Server</span>
                     <input
-                      value={proxyServer}
-                      onChange={(e) => setProxyServer(e.target.value)}
+                      value={settings.proxy_server}
+                      onChange={(e) => handleSettingChange('proxy_server', e.target.value)}
                       className="w-full px-3 py-2 bg-neutral-700 text-white rounded"
                     />
                   </label>
@@ -240,8 +255,8 @@ export default function SettingsApp() {
                     <span className="text-white">Enable VPN</span>
                     <input
                       type="checkbox"
-                      checked={vpn}
-                      onChange={() => setVPN(!vpn)}
+                      checked={settings.vpn}
+                      onChange={(e) => handleSettingChange('vpn', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -249,8 +264,8 @@ export default function SettingsApp() {
                     <span className="text-white">Tor Network</span>
                     <input
                       type="checkbox"
-                      checked={torEnabled}
-                      onChange={() => setTorEnabled(!torEnabled)}
+                      checked={settings.tor_enabled}
+                      onChange={(e) => handleSettingChange('tor_enabled', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -258,16 +273,16 @@ export default function SettingsApp() {
                     <span className="text-white">Port Scanning Detection</span>
                     <input
                       type="checkbox"
-                      checked={portScanning}
-                      onChange={() => setPortScanning(!portScanning)}
+                      checked={settings.port_scanning}
+                      onChange={(e) => handleSettingChange('port_scanning', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
                   <label className="block">
                     <span className="text-white mb-1 block">Spoofed MAC Address</span>
                     <input
-                      value={spoofedMac}
-                      onChange={(e) => setSpoofedMac(e.target.value)}
+                      value={settings.spoofed_mac}
+                      onChange={(e) => handleSettingChange('spoofed_mac', e.target.value)}
                       className="w-full px-3 py-2 bg-neutral-700 text-white rounded"
                     />
                   </label>
@@ -290,8 +305,8 @@ export default function SettingsApp() {
                     <span className="text-white">Firewall Protection</span>
                     <input
                       type="checkbox"
-                      checked={firewall}
-                      onChange={() => setFirewall(!firewall)}
+                      checked={settings.firewall}
+                      onChange={(e) => handleSettingChange('firewall', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -299,8 +314,8 @@ export default function SettingsApp() {
                     <span className="text-white">USB Device Protection</span>
                     <input
                       type="checkbox"
-                      checked={usbProtection}
-                      onChange={() => setUsbProtection(!usbProtection)}
+                      checked={settings.usb_protection}
+                      onChange={(e) => handleSettingChange('usb_protection', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -308,8 +323,8 @@ export default function SettingsApp() {
                     <span className="text-white">Email Phishing Filter</span>
                     <input
                       type="checkbox"
-                      checked={emailFilter}
-                      onChange={() => setEmailFilter(!emailFilter)}
+                      checked={settings.email_filter}
+                      onChange={(e) => handleSettingChange('email_filter', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -317,8 +332,8 @@ export default function SettingsApp() {
                     <span className="text-white">Kernel Protection</span>
                     <input
                       type="checkbox"
-                      checked={kernelProtection}
-                      onChange={() => setKernelProtection(!kernelProtection)}
+                      checked={settings.kernel_protection}
+                      onChange={(e) => handleSettingChange('kernel_protection', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -332,8 +347,8 @@ export default function SettingsApp() {
                     <span className="text-white">Sandbox Mode</span>
                     <input
                       type="checkbox"
-                      checked={sandboxMode}
-                      onChange={() => setSandboxMode(!sandboxMode)}
+                      checked={settings.sandbox_mode}
+                      onChange={(e) => handleSettingChange('sandbox_mode', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -341,8 +356,8 @@ export default function SettingsApp() {
                     <span className="text-white">Honeypot System</span>
                     <input
                       type="checkbox"
-                      checked={honeypot}
-                      onChange={() => setHoneypot(!honeypot)}
+                      checked={settings.honeypot}
+                      onChange={(e) => handleSettingChange('honeypot', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -350,8 +365,8 @@ export default function SettingsApp() {
                     <span className="text-white">Memory Encryption</span>
                     <input
                       type="checkbox"
-                      checked={memoryEncryption}
-                      onChange={() => setMemoryEncryption(!memoryEncryption)}
+                      checked={settings.memory_encryption}
+                      onChange={(e) => handleSettingChange('memory_encryption', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -359,8 +374,8 @@ export default function SettingsApp() {
                     <span className="text-white">Anti-Forensics Mode</span>
                     <input
                       type="checkbox"
-                      checked={antiForensics}
-                      onChange={() => setAntiForensics(!antiForensics)}
+                      checked={settings.anti_forensics}
+                      onChange={(e) => handleSettingChange('anti_forensics', e.target.checked)}
                       className="scale-125 accent-primary"
                     />
                   </div>
@@ -374,8 +389,8 @@ export default function SettingsApp() {
                 <label className="block">
                   <span className="text-white mb-1 block">Encryption Algorithm</span>
                   <select
-                    value={encryptionKey}
-                    onChange={(e) => setEncryptionKey(e.target.value)}
+                    value={settings.encryption_key}
+                    onChange={(e) => handleSettingChange('encryption_key', e.target.value)}
                     className="w-full px-3 py-2 bg-neutral-700 text-white rounded"
                   >
                     <option>AES-256-GCM</option>
@@ -387,8 +402,8 @@ export default function SettingsApp() {
                 <label className="block">
                   <span className="text-white mb-1 block">Hash Algorithm</span>
                   <select
-                    value={hashAlgorithm}
-                    onChange={(e) => setHashAlgorithm(e.target.value)}
+                    value={settings.hash_algorithm}
+                    onChange={(e) => handleSettingChange('hash_algorithm', e.target.value)}
                     className="w-full px-3 py-2 bg-neutral-700 text-white rounded"
                   >
                     <option>SHA-256</option>
@@ -398,214 +413,6 @@ export default function SettingsApp() {
                   </select>
                 </label>
               </div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'Monitoring' && (
-          <div>
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-              <FaEye className="text-primary" /> System Monitoring
-            </h2>
-            <div className="grid grid-cols-1 gap-2">
-              <div className="bg-neutral-800/50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-3 text-primary">Real-time Monitoring</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Network Traffic Analysis</span>
-                    <input
-                      type="checkbox"
-                      checked={trafficAnalysis}
-                      onChange={() => setTrafficAnalysis(!trafficAnalysis)}
-                      className="scale-125 accent-primary"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Keylogger Detection</span>
-                    <input
-                      type="checkbox"
-                      checked={keyloggerDetection}
-                      onChange={() => setKeyloggerDetection(!keyloggerDetection)}
-                      className="scale-125 accent-primary"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Behavioral Analysis</span>
-                    <input
-                      type="checkbox"
-                      checked={behaviorAnalysis}
-                      onChange={() => setBehaviorAnalysis(!behaviorAnalysis)}
-                      className="scale-125 accent-primary"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Network Monitoring</span>
-                    <input
-                      type="checkbox"
-                      checked={networkMonitoring}
-                      onChange={() => setNetworkMonitoring(!networkMonitoring)}
-                      className="scale-125 accent-primary"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-neutral-800/50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-3 text-primary">Threat Detection</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-white">Malware Threats:</span>
-                    <span className="text-primary">0 detected</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white">Suspicious Network Activity:</span>
-                    <span className="text-yellow-400">2 flagged</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white">Failed Login Attempts:</span>
-                    <span className="text-red-400">7 blocked</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white">Port Scan Attempts:</span>
-                    <span className="text-red-400">3 blocked</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-2 bg-neutral-800/50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-primary">Quick Actions</h3>
-              <div className="grid grid-cols-3 gap-2">
-                <button className="bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-blue-700">
-                  View Live Logs
-                </button>
-                <button className="bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-yellow-700">
-                  Generate Report
-                </button>
-                <button className="bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-red-700">
-                  Emergency Lock
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'Forensics' && (
-          <div>
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-              <FaDatabase className="text-primary" /> Digital Forensics
-            </h2>
-            <div className="grid grid-cols-1 gap-2">
-              <div className="bg-neutral-800/50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-3 text-primary">Evidence Collection</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Auto Evidence Collection</span>
-                    <input
-                      type="checkbox"
-                      checked={evidenceCollection}
-                      onChange={() => setEvidenceCollection(!evidenceCollection)}
-                      className="scale-125 accent-primary"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Memory Dumps</span>
-                    <input
-                      type="checkbox"
-                      checked={memoryDumps}
-                      onChange={() => setMemoryDumps(!memoryDumps)}
-                      className="scale-125 accent-primary"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Disk Imaging</span>
-                    <input
-                      type="checkbox"
-                      checked={diskImaging}
-                      onChange={() => setDiskImaging(!diskImaging)}
-                      className="scale-125 accent-primary"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-neutral-800/50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-3 text-primary">Forensic Tools</h3>
-                <div className="space-y-2">
-                  <button className="w-full bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-purple-700">
-                    Network Packet Analysis
-                  </button>
-                  <button className="w-full bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-purple-700">
-                    File System Analysis
-                  </button>
-                  <button className="w-full bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-purple-700">
-                    Registry Analysis
-                  </button>
-                  <button className="w-full bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-purple-700">
-                    Timeline Reconstruction
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'Advanced' && (
-          <div>
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-              <FaLock className="text-primary" /> Advanced Settings
-            </h2>
-            <div className="bg-neutral-800/50 p-4 rounded-lg mb-2">
-              <h3 className="text-lg font-semibold mb-3 text-red-400 flex items-center gap-2">
-                <FaExclamationTriangle /> Dangerous Operations
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-white">Crypto Mining Detection</span>
-                  <input
-                    type="checkbox"
-                    checked={cryptoMining}
-                    onChange={() => setCryptoMining(!cryptoMining)}
-                    className="scale-125 accent-red-400"
-                  />
-                </div>
-                <button className="w-full bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-red-700">
-                  Run Fake Ransomware Simulator
-                </button>
-                <button className="w-full bg-neutral-600/50 text-white px-3 py-2 rounded hover:bg-red-700">
-                  Launch Penetration Test
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-neutral-800/50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-primary">System Commands</h3>
-              <ul className="text-white text-sm space-y-2">
-                <li className="flex items-center gap-2">
-                  <FaTerminal className="text-primary" />
-                  Run Background Surveillance Scripts
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaNetworkWired className="text-blue-400" />
-                  Block Unknown Incoming Ports
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaUserSecret className="text-purple-400" />
-                  Custom DNS Routing Rules
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaKey className="text-yellow-400" />
-                  Generate Cryptographic Keys
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaBug className="text-red-400" />
-                  Enable Debug Mode
-                </li>
-                <li className="flex items-center gap-2">
-                  <FaSkull className="text-red-500" />
-                  Activate Steganography Tools
-                </li>
-              </ul>
             </div>
           </div>
         )}
