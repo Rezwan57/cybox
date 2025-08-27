@@ -7,7 +7,6 @@ pub fn get_emails(user_id: i32) -> Result<Vec<Email>, String> {
     println!("Fetching emails for user: {}", user_id);
     let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
     
-    // First, insert universal emails for the user if they don't exist
     let insert_query = r#"
         INSERT INTO user_emails (user_id, universal_email_id, is_read, classification)
         SELECT ?, ue.id, false, 'none'

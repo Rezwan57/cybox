@@ -1,6 +1,6 @@
 'use client'
-import React, { useState, useEffect } from 'react'
-import { 
+import React, { useState, useEffect, useMemo } from 'react'
+import {
   FaUserShield, 
   FaWifi, 
   FaLock, 
@@ -8,7 +8,24 @@ import {
   FaCogs, 
 } from 'react-icons/fa'
 import { invoke } from '@tauri-apps/api/core'
-import { useAuth } from '@/Context/AuthContext'
+import { useAuth, Service } from '@/Context/AuthContext'
+
+// --- Components ---
+const Switch = ({ checked, onChange }: { checked: boolean, onChange: (checked: boolean) => void }) => (
+  <button
+    onClick={() => onChange(!checked)}
+    className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-200 ease-in-out focus:outline-none ${
+      checked ? 'bg-primary' : 'bg-neutral-600'
+    }`}
+  >
+    <span
+      className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-200 ease-in-out ${
+        checked ? 'translate-x-6' : 'translate-x-1'
+      }`}
+    />
+  </button>
+);
+
 
 // --- TypeScript Interfaces ---
 interface Settings {
@@ -49,10 +66,11 @@ const sections = ['System', 'Account', 'Network', 'Security'] as const
 type Section = (typeof sections)[number]
 
 export default function SettingsApp() {
-  const { user } = useAuth()
-  const [activeSection, setActiveSection] = useState<Section>('System')
+  const { user, purchasedServices } = useAuth()
+  const [activeSection, setActiveSection] = useState<Section>('Security')
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true);
+  const [serviceStatus, setServiceStatus] = useState<{[key: number]: boolean}>({});
 
   useEffect(() => {
     if (user) {
@@ -63,6 +81,16 @@ export default function SettingsApp() {
     }
   }, [user]);
 
+  // Initialize service statuses
+  useEffect(() => {
+    const initialStatuses: {[key: number]: boolean} = {};
+    purchasedServices.forEach(service => {
+      // In a real app, you would fetch this from the backend
+      initialStatuses[service.id] = true; // Default to enabled
+    });
+    setServiceStatus(initialStatuses);
+  }, [purchasedServices]);
+
   const handleSettingChange = (key: keyof Settings, value: any) => {
     if (settings) {
       const newSettings = { ...settings, [key]: value };
@@ -70,6 +98,17 @@ export default function SettingsApp() {
       invoke('update_settings', { settings: newSettings }).catch(console.error);
     }
   };
+
+  const handleServiceStatusChange = (serviceId: number, isEnabled: boolean) => {
+    setServiceStatus(prev => ({ ...prev, [serviceId]: isEnabled }));
+    // Here you would invoke a backend call to persist the setting
+    // invoke('set_service_status', { userId: user.id, serviceId, isEnabled }).catch(console.error);
+    console.log(`Service ${serviceId} status changed to: ${isEnabled}`);
+  };
+
+  const securityServices = useMemo(() => {
+      return purchasedServices.filter(s => s.category === 'Security' || s.category === 'Antivirus');
+  }, [purchasedServices]);
 
   if (loading) {
     return <div>Loading...</div>
@@ -134,21 +173,11 @@ export default function SettingsApp() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-white">Two-Factor Authentication</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.two_fa}
-                      onChange={(e) => handleSettingChange('two_fa', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.two_fa} onChange={(val) => handleSettingChange('two_fa', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Biometric Authentication</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.biometric_auth}
-                      onChange={(e) => handleSettingChange('biometric_auth', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.biometric_auth} onChange={(val) => handleSettingChange('biometric_auth', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Session Timeout (minutes)</span>
@@ -253,30 +282,15 @@ export default function SettingsApp() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-white">Enable VPN</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.vpn}
-                      onChange={(e) => handleSettingChange('vpn', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.vpn} onChange={(val) => handleSettingChange('vpn', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Tor Network</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.tor_enabled}
-                      onChange={(e) => handleSettingChange('tor_enabled', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.tor_enabled} onChange={(val) => handleSettingChange('tor_enabled', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Port Scanning Detection</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.port_scanning}
-                      onChange={(e) => handleSettingChange('port_scanning', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.port_scanning} onChange={(val) => handleSettingChange('port_scanning', val)} />
                   </div>
                   <label className="block">
                     <span className="text-white mb-1 block">Spoofed MAC Address</span>
@@ -303,41 +317,43 @@ export default function SettingsApp() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-white">Firewall Protection</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.firewall}
-                      onChange={(e) => handleSettingChange('firewall', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.firewall} onChange={(val) => handleSettingChange('firewall', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">USB Device Protection</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.usb_protection}
-                      onChange={(e) => handleSettingChange('usb_protection', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.usb_protection} onChange={(val) => handleSettingChange('usb_protection', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Email Phishing Filter</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.email_filter}
-                      onChange={(e) => handleSettingChange('email_filter', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.email_filter} onChange={(val) => handleSettingChange('email_filter', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Kernel Protection</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.kernel_protection}
-                      onChange={(e) => handleSettingChange('kernel_protection', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.kernel_protection} onChange={(val) => handleSettingChange('kernel_protection', val)} />
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-neutral-800/50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-3 text-primary">Installed Security Apps</h3>
+                {securityServices.length > 0 ? (
+                    <ul className="space-y-2">
+                        {securityServices.map(service => (
+                            <li key={service.id} className="p-2 bg-neutral-700 rounded-md flex justify-between items-center">
+                                <div>
+                                    <p className="font-bold text-white">{service.name}</p>
+                                    <p className="text-xs text-gray-400">Developer: {service.developer}</p>
+                                </div>
+                                <Switch 
+                                    checked={serviceStatus[service.id] || false} 
+                                    onChange={(val) => handleServiceStatusChange(service.id, val)} 
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-gray-400">No additional security apps installed.</p>
+                )}
               </div>
 
               <div className="bg-neutral-800/50 p-4 rounded-lg">
@@ -345,39 +361,19 @@ export default function SettingsApp() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-white">Sandbox Mode</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.sandbox_mode}
-                      onChange={(e) => handleSettingChange('sandbox_mode', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.sandbox_mode} onChange={(val) => handleSettingChange('sandbox_mode', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Honeypot System</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.honeypot}
-                      onChange={(e) => handleSettingChange('honeypot', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.honeypot} onChange={(val) => handleSettingChange('honeypot', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Memory Encryption</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.memory_encryption}
-                      onChange={(e) => handleSettingChange('memory_encryption', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.memory_encryption} onChange={(val) => handleSettingChange('memory_encryption', val)} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white">Anti-Forensics Mode</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.anti_forensics}
-                      onChange={(e) => handleSettingChange('anti_forensics', e.target.checked)}
-                      className="scale-125 accent-primary"
-                    />
+                    <Switch checked={settings.anti_forensics} onChange={(val) => handleSettingChange('anti_forensics', val)} />
                   </div>
                 </div>
               </div>

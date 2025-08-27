@@ -10,6 +10,11 @@ fn main() {
             handlers::task::get_universal_tasks,
             handlers::task::get_user_tasks,
             handlers::task::complete_task,
+            
+            
+            handlers::task::verify_file_encryption,
+            handlers::task::verify_hidden_file,
+            handlers::task::verify_email_classification,
             // Bank Commands
             handlers::bank::award_points,
             // Existing Commands

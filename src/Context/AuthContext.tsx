@@ -1,50 +1,105 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
-// Define the shape of the user object
+// --- TypeScript Interfaces ---
+
 export interface User {
   id: number;
   name: string;
-  // You can add other non-sensitive user data here
 }
 
-// Define the shape of the context value
+export interface Service {
+  id: number;
+  name: string;
+  description: string | null;
+  price: number | null;
+  category: string | null;
+  features: string | null;
+  icon_path: string | null;
+  version: string | null;
+  developer: string | null;
+  release_date: string | null;
+  is_important: boolean | null;
+}
+
 interface AuthContextType {
   user: User | null;
   login: (userData: User) => void;
   logout: () => void;
+  purchasedServices: Service[];
+  purchaseService: (service: Service) => Promise<void>;
+  fetchPurchasedServices: () => Promise<void>;
 }
 
-// Create the context with a default undefined value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create the provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-
-  // *** ADDED FOR DEBUGGING ***
-  useEffect(() => {
-    console.log('[AuthContext] User state changed:', user);
-  }, [user]);
-
+  const [purchasedServices, setPurchasedServices] = useState<Service[]>([]);
 
   const login = (userData: User) => {
-    console.log('[AuthContext] Calling login with user:', userData);
     setUser(userData);
   };
 
   const logout = () => {
-    console.log('[AuthContext] Calling logout.');
     setUser(null);
+    setPurchasedServices([]); // Clear services on logout
   };
 
-  const value = { user, login, logout };
+  const fetchPurchasedServices = useCallback(async () => {
+    if (user) {
+      try {
+        const serviceIds = await invoke<number[]>('get_user_services', { userId: user.id });
+        // Assuming you have a way to get full service details from IDs
+        // For now, let's assume we can fetch all services and filter
+        const allServices = await invoke<Service[]>('get_all_services');
+        const userServices = allServices.filter(s => serviceIds.includes(s.id));
+        setPurchasedServices(userServices);
+      } catch (error) {
+        console.error("Failed to fetch purchased services:", error);
+      }
+    }
+  }, [user]);
+
+  const purchaseService = async (service: Service) => {
+    if (!user || service.price === null) {
+      throw new Error("User not logged in or service has no price.");
+    }
+    try {
+      await invoke('purchase_service', {
+        userId: user.id,
+        serviceId: service.id,
+        price: service.price,
+      });
+      // Add the newly purchased service to the list
+      setPurchasedServices(prev => [...prev, service]);
+    } catch (error) {
+      console.error("Purchase failed:", error);
+      throw error; // Re-throw to be caught in the component
+    }
+  };
+  
+  // Fetch services when user logs in
+  useEffect(() => {
+    if (user) {
+      fetchPurchasedServices();
+    }
+  }, [user, fetchPurchasedServices]);
+
+  const value = { 
+    user, 
+    login, 
+    logout, 
+    purchasedServices, 
+    purchaseService,
+    fetchPurchasedServices 
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Create a custom hook for easy context consumption
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

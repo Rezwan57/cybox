@@ -1,6 +1,7 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import Image from 'next/image'
+import { AppContext } from '@/Context/AppWrapper'
 
 
 interface DockProps {
@@ -8,30 +9,28 @@ interface DockProps {
   openApps: string[]
 }
 
-const icons = [
-  { name: 'Home', icon: '/Icons/Home.svg' },
-  { name: 'Files', icon: '/Icons/FileManager.svg' },
-  { name: 'Console', icon: '/Icons/Console.svg' },
-  { name: 'Settings', icon: '/Icons/Setting.svg' },
-  { name: 'Mail', icon: '/Icons/Mail.svg' },
-  { name: 'Bank', icon: '/Icons/Bank.svg' },
-  { name: 'Browser', icon: '/Icons/Browser.svg' },
-  { name: 'CybStore', icon: '/Icons/CybStore.svg' },
-  { name: 'Task', icon: '/Icons/Task.svg' },
-]
+import { icons } from '@/data/icons';
 
 const Dock: React.FC<DockProps> = ({ onAppClick, openApps }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [isClicked, setIsClicked] = useState<number | null>(null)
+  const appContext = useContext(AppContext)
 
   const handleClick = (index: number) => {
     setIsClicked(index)
     setTimeout(() => setIsClicked(null), 150)
   }
 
+  const purchasedServices = appContext?.purchasedServices || []
+  const purchasedServiceNames = purchasedServices.map(s => s.name)
+
+  const visibleIcons = icons.filter(icon => {
+    return icon.required || purchasedServiceNames.includes(icon.name)
+  })
+
   return (
     <nav className="fixed bottom-2 left-1/2 -translate-x-1/2 z-50 flex gap-4 bg-black/20 backdrop-blur-md p-3 pb-1 rounded-[20px] shadow-2xl transform-gpu border-2 border-teal-400">
-      {icons.map((Icon, index) => {
+      {visibleIcons.map((Icon, index) => {
         const isOpen = openApps.includes(Icon.name)
         const isClickedHere = isClicked === index
 

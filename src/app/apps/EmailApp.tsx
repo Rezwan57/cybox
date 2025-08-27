@@ -97,24 +97,7 @@ export default function EmailApp() {
     }
   };
 
-  // const handleSendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   if (!user) return;
 
-  //   const form = e.currentTarget;
-  //   const to = (form.elements.namedItem('to') as HTMLInputElement).value;
-  //   const subject = (form.elements.namedItem('subject') as HTMLInputElement).value;
-  //   const body = (form.elements.namedItem('body') as HTMLTextAreaElement).value;
-
-  //   try {
-  //     await invoke('send_email', { fromUser: user.name, toUser: to, subject, body });
-  //     fetchEmails(); // Refresh emails after sending
-  //     setIsComposing(false);
-  //     setActiveTab('sent');
-  //   } catch (error) {
-  //     console.error('Failed to send email:', error);
-  //   }
-  // };
 
   const addLink = () => {
     const url = prompt("Enter the URL");
@@ -246,7 +229,7 @@ export default function EmailApp() {
                 <p className="text-sm text-neutral-400">To: {user?.name}</p>
               </div>
             </div>
-            <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: selectedEmail.body }}></div>
+            <div className="prose prose-invert max-w-none  select-text" dangerouslySetInnerHTML={{ __html: selectedEmail.body }}></div>
             {selectedEmail.classification === 'phishing' && (
               <div className="mt-6 p-4 bg-yellow-900/30 text-yellow-400 rounded-lg flex items-center gap-3">
                 <FaExclamationTriangle />

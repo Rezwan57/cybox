@@ -92,14 +92,14 @@ INSERT INTO universal_tasks (id, title, description, learning_module, points, ta
  75, 'knowledge', NULL, 2),
 
 (3, 'Level 3: Spotting Phishing Emails',
- 'Learn to identify phishing emails and understand the tactics used by attackers.',
+ 'Go to the Email app and correctly classify the phishing and spam emails.',
  'Phishing is a type of social engineering attack often used to steal user data, including login credentials and credit card numbers. It occurs when an attacker, masquerading as a trusted entity, dupes a victim into opening an email, instant message, or text message. The recipient is then tricked into clicking a malicious link, which can lead to the installation of malware, the freezing of their system as part of a ransomware attack or the revealing of sensitive information. Look for red flags like generic greetings, urgent language, suspicious links, and poor grammar.',
- 100, 'knowledge', NULL, 3),
+ 100, 'action', '{"required_classifications": [{"universal_email_id": 1, "classification": "phishing"}, {"universal_email_id": 3, "classification": "spam"}]}', 3),
 
-(4, 'Level 4: Crack the Password',
- 'The user ''admin'' has a weak password. Find a way to crack it.',
+(4, 'Level 4: The Multi-Hash Challenge',
+ 'Your account is protected by a multi-hash authentication. You need to crack 5 MD5 hashes to get the passwords. Check your email from admin@cybox.app for the hashes.',
  NULL,
- 150, 'action', '{"username": "admin", "password_hash": "e10adc3949ba59abbe56e057f20f883e"}', 4), -- password is 123456
+ 150, 'action', '{"passwords": ["User321", "adminIam230", "mod78mod", "Klein679", "Roco89080"]}', 4),
 
 (5, 'Level 5: Encrypt the Evidence',
  'A sensitive file is located at ''/home/user/sensitive_data.txt''. Encrypt it with the password ''secret123'' to protect it.',
@@ -143,7 +143,8 @@ INSERT INTO services (name, description, icon_path, category, version, developer
 ('System Defender', 'Optimizes your system by removing "threats" and boosting performance. (Warning: Known for false positives and system slowdowns.)', '/public/Icons/Console.svg', 'Utility', '3.0.0', 'RogueWare Inc.', '2023-10-01', 0, 0, '[]'),
 ('Data Miner', 'A powerful tool to analyze your system data for "insights". (Warning: This is spyware designed to exfiltrate personal information.)', '/public/Icons/Mail.svg', 'Malware', '1.0.0', 'ShadowCorp', '2023-09-20', 0, 0, '[]'),
 ('Privacy Shield', 'Blocks trackers and enhances your online anonymity. (Legitimate privacy tool)', '/public/Icons/CybStore.svg', 'Security', '1.1.0', 'PrivacyTools Inc.', '2024-04-05', 1, 0, '[]'),
-('SecureBrowse', 'A secure web browser with built-in ad and tracker blocking.', '/public/Icons/FileManager.svg', 'Security', '1.0.0', 'SecureWeb Devs', '2024-03-15', 1, 0, '[]');
+('SecureBrowse', 'A secure web browser with built-in ad and tracker blocking.', '/public/Icons/FileManager.svg', 'Security', '1.0.0', 'SecureWeb Devs', '2024-03-15', 1, 0, '[]'),
+('MD5 Cracker', 'A tool to crack MD5 hashes from a list of common passwords.', '/public/Icons/Console.svg', 'Utility', '1.0.0', 'Cybox Devs', '2025-01-01', 0, 100, '[]');
 
 CREATE TABLE universal_emails (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -168,7 +169,23 @@ CREATE TABLE user_emails (
 INSERT INTO universal_emails (from_user, subject, body) VALUES
 ('admin@cyberbank.fake', 'Unusual login detected', 'We noticed a login from a new device. Click the link below to secure your account: <a href="cybox://bank/login?phishing=true" class="text-blue-400 underline">https://cyberbank.fake/secure</a>'),
 ('support@securevpn.fake', 'Your subscription has expired', 'Renew your VPN today to stay protected. <a href="cybox://settings/network" class="text-blue-400 underline">Renew Now</a>'),
-('friend@trustme.fake', 'Check out this awesome game!', 'It’s a new hacking simulator. Totally legit ;) Download here: <a href="cybox://filemanager/download/malware.exe" class="text-blue-400 underline">malware.exe</a>');
+('friend@trustme.fake', 'Check out this awesome game!', 'It’s a new hacking simulator. Totally legit ;) Download here: <a href="cybox://filemanager/download/malware.exe" class="text-blue-400 underline">malware.exe</a>'),
+('admin@cybox.app', 'Level 4 Challenge Hashes', '<p>Hello,</p><p>Here are the hashes for the Level 4 challenge. One of these sets is the correct one. Good luck.</p><pre>261e672695a654895fed24313e5246de
+
+c1572d06420ea7890535785dd4815fe6
+
+9594de8de31942437651eb4162554253
+
+2572057493948a74218569b549041897
+
+59a84b33a4aa9e6953051510396308b1
+
+
+d41d8cd98f00b204e9800998ecf8427e
+
+098f6bcd4621d373cade4e832627b4f6
+
+5f4dcc3b5aa765d61d8327deb882cf99</pre>')
 
 
 

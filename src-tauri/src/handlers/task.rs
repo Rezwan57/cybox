@@ -2,7 +2,6 @@ use crate::{
     db,
     models::task::{UniversalTask, UserTask},
 };
-use md5;
 use mysql::prelude::*;
 use mysql::params;
 
@@ -113,12 +112,7 @@ pub fn complete_task(task_id: u64, user_id: u64) -> Result<String, String> {
     Ok("Task completed and points awarded.".to_string())
 }
 
-#[tauri::command]
-pub fn verify_password_crack(password: String) -> Result<bool, String> {
-    let hash = md5::compute(password.as_bytes());
-    let hex_hash = format!("{:x}", hash);
-    Ok(hex_hash == "e10adc3949ba59abbe56e057f20f883e")
-}
+
 
 #[tauri::command]
 pub fn verify_file_encryption(file_path: String) -> Result<bool, String> {
@@ -131,4 +125,33 @@ pub fn verify_file_encryption(file_path: String) -> Result<bool, String> {
 #[tauri::command]
 pub fn verify_hidden_file(content: String) -> Result<bool, String> {
     Ok(content == "c_y_b_e_r_s_e_c_u_r_i_t_y")
+}
+
+#[tauri::command]
+pub fn verify_email_classification(user_id: u64) -> Result<bool, String> {
+    let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
+
+    // Define the required classifications
+    let required_classifications: std::collections::HashMap<u64, &str> = 
+        [(1, "phishing"), (3, "spam")].iter().cloned().collect();
+
+    // Get user's classifications
+    let user_classifications: Vec<(u64, String)> = conn.exec_map(
+        "SELECT universal_email_id, classification FROM user_emails WHERE user_id = ?",
+        (user_id,),
+        |(universal_email_id, classification): (u64, String)| (universal_email_id, classification),
+    ).map_err(|e| e.to_string())?;
+
+    let user_classifications_map: std::collections::HashMap<u64, String> = 
+        user_classifications.into_iter().collect();
+
+    // Check if all required classifications are met
+    for (universal_email_id, required_class) in required_classifications {
+        match user_classifications_map.get(&universal_email_id) {
+            Some(user_class) if user_class == required_class => continue,
+            _ => return Ok(false), // Incorrect or missing classification
+        }
+    }
+
+    Ok(true)
 }

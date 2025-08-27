@@ -51,7 +51,7 @@ const LoginForm = () => {
       <div className="relative z-10 w-full max-w-md px-6">
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-6 p-8 rounded-3xl bg-black/20 backdrop-blur-md border border-white/10 shadow-2xl"
+          className="flex flex-col gap-4 p-8 rounded-3xl bg-black/20 backdrop-blur-md border border-white/10 shadow-2xl"
         >
           <div className="text-center mb-4">
             <h1 className="text-3xl font-bold text-white mb-2">Welcome</h1>
