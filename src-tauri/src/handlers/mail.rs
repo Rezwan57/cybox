@@ -88,14 +88,25 @@ pub fn delete_email(email_id: i32) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn classify_email(email_id: i32, classification: String) -> Result<(), String> {
+pub fn classify_email(email_id: i32, classification: String) -> Result<String, String> {
     let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
+
+    let current_classification: Option<String> = conn
+        .query_first(format!("SELECT classification FROM user_emails WHERE id = {}", email_id))
+        .map_err(|e| e.to_string())?;
+
+    let new_classification = match current_classification {
+        Some(current) if current == classification => "none".to_string(),
+        _ => classification,
+    };
+
     conn.exec_drop(
         "UPDATE user_emails SET classification = ? WHERE id = ?",
-        (classification, email_id),
+        (new_classification.clone(), email_id),
     )
     .map_err(|e| e.to_string())?;
-    Ok(())
+
+    Ok(new_classification)
 }
 
 // #[tauri::command]

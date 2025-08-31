@@ -115,6 +115,7 @@ dependencies = [
  "mysql_common",
  "once_cell",
  "rand 0.8.5",
+ "regex",
  "rusqlite",
  "rust_decimal",
  "rust_decimal_macros",

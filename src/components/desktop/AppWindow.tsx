@@ -167,7 +167,7 @@ export default function AppWindow({
                 }),
             position: 'fixed',
             zIndex: 40,
-            backgroundColor: 'rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(15,15,15,0.6)',
             backdropFilter: 'blur(30px)',
             border: '3px solid var(--primary)',
             overflow: 'hidden',

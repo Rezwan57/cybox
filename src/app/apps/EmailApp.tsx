@@ -85,12 +85,12 @@ export default function EmailApp() {
 
   const classifyEmail = async (id: number, classification: 'spam' | 'phishing') => {
     try {
-      await invoke('classify_email', { emailId: id, classification });
-      const updateClassification = (prevEmails: Email[]) => prevEmails.map(e => e.id === id ? { ...e, classification } : e);
+      const newClassification = await invoke('classify_email', { emailId: id, classification });
+      const updateClassification = (prevEmails: Email[]) => prevEmails.map(e => e.id === id ? { ...e, classification: newClassification as string } : e);
       setEmails(updateClassification);
 
       if (selectedEmail && selectedEmail.id === id) {
-        setSelectedEmail({ ...selectedEmail, classification });
+        setSelectedEmail({ ...selectedEmail, classification: newClassification as string });
       }
     } catch (error) {
       console.error('Failed to classify email:', error);
@@ -129,7 +129,7 @@ export default function EmailApp() {
           </div>
           <div className="flex justify-end gap-4">
             <button type="button" onClick={() => setIsComposing(false)} className="text-neutral-400 hover:text-white">Cancel</button>
-            <button type="submit" className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">Send</button>
+            <button type="submit" className="bg-teal-400 text-white py-2 px-4 rounded-lg hover:bg-teal-600 transition-colors">Send</button>
           </div>
         </form>
       </div>
@@ -209,10 +209,10 @@ export default function EmailApp() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">{selectedEmail.subject}</h2>
               <div className="flex items-center gap-2">
-                <button onClick={() => classifyEmail(selectedEmail.id, 'spam')} className="p-2 hover:bg-neutral-700 rounded-full" title="Mark as Spam">
+                <button onClick={() => classifyEmail(selectedEmail.id, 'spam')} className={`p-2 hover:bg-neutral-700 rounded-full ${selectedEmail.classification === 'spam' ? 'bg-red-200/20 text-red-500' : ''}`} title="Mark as Spam">
                   <FaBan />
                 </button>
-                <button onClick={() => classifyEmail(selectedEmail.id, 'phishing')} className="p-2 hover:bg-neutral-700 rounded-full" title="Mark as Phishing">
+                <button onClick={() => classifyEmail(selectedEmail.id, 'phishing')} className={`p-2 hover:bg-neutral-700 rounded-full ${selectedEmail.classification === 'phishing' ? 'bg-yellow-200/20 text-yellow-500' : ''}`} title="Mark as Phishing">
                   <FaExclamationTriangle />
                 </button>
                 <button onClick={() => deleteEmail(selectedEmail.id)} className="p-2 hover:bg-neutral-700 rounded-full" title="Delete">

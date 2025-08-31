@@ -1,8 +1,18 @@
-use crate::db;
+use crate::{db, handlers::task::complete_task};
 use crate::models::user::User;
 use crate::utils::crypto;
 use mysql::{params, prelude::*};
 use tauri::command;
+use regex::Regex;
+
+fn is_password_strong(password: &str) -> bool {
+    let has_uppercase = Regex::new(r"[A-Z]").unwrap().is_match(password);
+    let has_lowercase = Regex::new(r"[a-z]").unwrap().is_match(password);
+    let has_digit = Regex::new(r"\d").unwrap().is_match(password);
+    let has_symbol = Regex::new(r"\W").unwrap().is_match(password); 
+
+    password.len() >= 12 && has_uppercase && has_lowercase && has_digit && has_symbol
+}
 
 #[command]
 pub fn login(name: String, password: String) -> Result<User, String> {
@@ -55,6 +65,11 @@ pub fn change_password(
         return Err("Invalid current password".to_string());
     }
 
+    // Check new password strength
+    if !is_password_strong(&new_password) {
+        return Err("New password is not strong enough. It must be at least 12 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.".to_string());
+    }
+
     let new_hashed_password = crypto::hash_password(&new_password);
 
     conn.exec_drop(
@@ -82,7 +97,7 @@ pub fn reset_password(name: String) -> Result<String, String> {
             "UPDATE users SET password = :password WHERE name = :name",
             params! {
                 "password" => new_hashed_password,
-                "name" => name
+                "name" => name.clone()
             },
         )
         .map_err(|e| e.to_string())?
@@ -93,6 +108,15 @@ pub fn reset_password(name: String) -> Result<String, String> {
     if affected_rows == 0 {
         return Err("User not found".to_string());
     }
+
+    // Get the user ID from the database
+    let user_id: u64 = conn.exec_first(
+        "SELECT id FROM users WHERE name = :name",
+        params! { "name" => &name }
+    ).map_err(|e| e.to_string())?.ok_or_else(|| "User not found.".to_string())?;
+
+    // Mark Level 2 as complete
+    complete_task(2, user_id)?;
 
     Ok(format!(
         "Password reset successfully. New password: {}",

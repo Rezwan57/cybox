@@ -1,6 +1,7 @@
 use crate::{
     db,
     models::task::{UniversalTask, UserTask},
+    utils::crypto,
 };
 use mysql::prelude::*;
 use mysql::params;
@@ -77,34 +78,12 @@ pub fn complete_task(task_id: u64, user_id: u64) -> Result<String, String> {
 
     let points_to_award = universal_task_points.ok_or_else(|| "Universal task not found.".to_string())?;
 
-    // Check if the user_task already exists and is completed
-    let existing_user_task_status: Option<String> = conn.exec_first(
-        "SELECT status FROM user_tasks WHERE user_id = :user_id AND universal_task_id = :universal_task_id",
-        params! {
-            "user_id" => user_id,
-            "universal_task_id" => task_id,
-        }
-    ).map_err(|e| e.to_string())?;
-
-    match existing_user_task_status {
-        Some(status) if status == "Completed" => {
-            return Err("Task already completed.".to_string());
-        },
-        Some(_) => { // Exists but not completed, update it
-            let query = "UPDATE user_tasks SET status = 'Completed', completed_at = NOW() WHERE user_id = :user_id AND universal_task_id = :universal_task_id";
-            conn.exec_drop(query, mysql::params! {
-                "user_id" => user_id,
-                "universal_task_id" => task_id,
-            }).map_err(|e| e.to_string())?;
-        },
-        None => { // Does not exist, insert new
-            let query = "INSERT INTO user_tasks (user_id, universal_task_id, status, completed_at) VALUES (:user_id, :universal_task_id, 'Completed', NOW())";
-            conn.exec_drop(query, mysql::params! {
-                "user_id" => user_id,
-                "universal_task_id" => task_id,
-            }).map_err(|e| e.to_string())?;
-        }
-    }
+    // Always try to insert or update the user_task to "Completed"
+    let query = "INSERT INTO user_tasks (user_id, universal_task_id, status, completed_at) VALUES (:user_id, :universal_task_id, 'Completed', NOW()) ON DUPLICATE KEY UPDATE status = 'Completed', completed_at = NOW()";
+    conn.exec_drop(query, mysql::params! {
+        "user_id" => user_id,
+        "universal_task_id" => task_id,
+    }).map_err(|e| e.to_string())?;
 
     // Award points
     super::bank::award_points(user_id, points_to_award)?;
@@ -112,14 +91,31 @@ pub fn complete_task(task_id: u64, user_id: u64) -> Result<String, String> {
     Ok("Task completed and points awarded.".to_string())
 }
 
+#[tauri::command]
+pub fn reset_user_task(user_id: u64, universal_task_id: u64) -> Result<String, String> {
+    let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
+    conn.exec_drop(
+        "UPDATE user_tasks SET status = 'To Do', completed_at = NULL WHERE user_id = :user_id AND universal_task_id = :universal_task_id",
+        params! {
+            "user_id" => user_id,
+            "universal_task_id" => universal_task_id,
+        },
+    )
+    .map_err(|e| e.to_string())?;
+    Ok("Task status reset to To Do.".to_string())
+}
+
 
 
 #[tauri::command]
-pub fn verify_file_encryption(file_path: String) -> Result<bool, String> {
-    // In a real scenario, we would check if the file is actually encrypted.
-    // For this simulation, we will assume the user has encrypted the file.
-    // We can add more complex logic here later.
-    Ok(file_path == "/home/user/sensitive_data.txt")
+pub fn verify_file_encryption(file_path: String, user_id: u64) -> Result<bool, String> {
+    let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
+    let query = "SELECT COUNT(*) FROM encrypted_files WHERE file_path = :file_path";
+    let count: u64 = conn
+        .exec_first(query, params! { "file_path" => file_path })
+        .map_err(|e| e.to_string())?
+        .unwrap_or(0);
+    Ok(count > 0)
 }
 
 #[tauri::command]
@@ -133,7 +129,7 @@ pub fn verify_email_classification(user_id: u64) -> Result<bool, String> {
 
     // Define the required classifications
     let required_classifications: std::collections::HashMap<u64, &str> = 
-        [(1, "phishing"), (3, "spam")].iter().cloned().collect();
+        [(1, "spam"), (3, "phishing")].iter().cloned().collect();
 
     // Get user's classifications
     let user_classifications: Vec<(u64, String)> = conn.exec_map(
@@ -145,13 +141,30 @@ pub fn verify_email_classification(user_id: u64) -> Result<bool, String> {
     let user_classifications_map: std::collections::HashMap<u64, String> = 
         user_classifications.into_iter().collect();
 
-    // Check if all required classifications are met
     for (universal_email_id, required_class) in required_classifications {
         match user_classifications_map.get(&universal_email_id) {
             Some(user_class) if user_class == required_class => continue,
-            _ => return Ok(false), // Incorrect or missing classification
+            _ => return Ok(false), 
         }
     }
 
     Ok(true)
+}
+
+#[tauri::command]
+pub fn verify_strong_password_task(user_id: u64) -> Result<bool, String> {
+    let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
+
+    let password_query = "SELECT password FROM users WHERE id = :user_id";
+    let password_hash: Option<String> = conn.exec_first(password_query, params! { "user_id" => user_id })
+        .map_err(|e| e.to_string())?;
+
+    if let Some(hash) = password_hash {
+        // We assume the default password is 'password'.
+        // In a real app, this would be handled more robustly.
+        let default_password_hash = crypto::hash_password("password");
+        Ok(hash != default_password_hash)
+    } else {
+        Err("User not found".to_string())
+    }
 }

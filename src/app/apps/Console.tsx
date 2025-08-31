@@ -3,16 +3,23 @@
 import React, { useState, useRef, useEffect } from 'react'
 import Sha256 from 'crypto-js/sha256'
 import { useAuth } from '@/Context/AuthContext'
+import { invoke } from '@tauri-apps/api/core'
+import { useFileSystem } from '@/Context/FileSystemContext';
 
 type Line = {
   input: string
   output: string[]
 }
 
-type FirewallRule = string
+type FirewallRule = {
+  id: number;
+  user_id: number;
+  rule: string;
+}
 
 export default function Console() {
   const { user } = useAuth()
+  const { triggerRefresh } = useFileSystem();
   const [lines, setLines] = useState<Line[]>([
     {
       input: '',
@@ -23,17 +30,18 @@ export default function Console() {
   const [cwd, setCwd] = useState('')
   const [history, setHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState<number | null>(null)
-  const [firewallRules, setFirewallRules] = useState<FirewallRule[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (user) {
+      if (user) {
       setCwd(`${user.name}@Cybox:~$`)
+    }
     }
   }, [user])
 
-  const runCommand = (cmd: string): string[] => {
+  const runCommand = async (cmd: string): Promise<string[]> => {
     const [base, ...args] = cmd.trim().split(' ')
     const argStr = args.join(' ')
 
@@ -62,6 +70,7 @@ export default function Console() {
           'netstat                    Show open network ports',
           'nslookup <domain>          Simulate DNS query',
           'whois <domain>             Simulate WHOIS lookup',
+          'encrypt <file> --password <pass> Encrypt a file',
         ]
 
       case 'whoami':
@@ -74,13 +83,31 @@ export default function Console() {
         if (!argStr) return ['Usage: hash <text>']
         return [`SHA256: ${Sha256(argStr).toString()}`]
 
+      case 'encrypt':
+        const parts = args
+        const passwordIndex = parts.indexOf('--password');
+        if (passwordIndex === -1 || passwordIndex === 0 || passwordIndex === parts.length - 1) {
+            return ['Usage: encrypt <file_path> --password <password>'];
+        }
+        const filePath = parts.slice(0, passwordIndex).join(' ');
+        const password = parts.slice(passwordIndex + 1).join(' ');
+
+        try {
+            if (!user) return ["No user session found."];
+            const result = await invoke("encrypt_file", { filePath, password, userId: user.id });
+            triggerRefresh(); // Trigger refresh after successful encryption
+            return [result as string];
+        } catch (err) {
+            return [err as string];
+        }
+
       case 'nmap':
         if (!argStr) return ['Usage: nmap <host>']
         return [
           `Starting simulated Nmap scan on ${argStr}...`,
           'PORT     STATE SERVICE',
           '22/tcp   open  ssh',
-          '80/tcp   open  http',
+          '80/tcp  open  http',
           '443/tcp  open  https',
           'Scan complete.',
         ]
@@ -88,18 +115,28 @@ export default function Console() {
       case 'firewall':
         const sub = args[0]
         const rule = args.slice(1).join(' ')
-        if (sub === 'list') return firewallRules.length ? firewallRules.map((r, i) => `${i + 1}. ${r}`) : ['No firewall rules.']
-        if (sub === 'add') {
-          if (!rule) return ['Usage: firewall add <rule>']
-          setFirewallRules(prev => [...prev, rule])
-          return [`Rule added: "${rule}"`]
+        if (!user) return ['No user session found.'];
+
+        try {
+            if (sub === 'list') {
+                const rules: FirewallRule[] = await invoke('list_firewall_rules', { userId: user.id });
+                return rules.length ? rules.map((r, i) => `${i + 1}. ${r.rule}`) : ['No firewall rules.'];
+            }
+            if (sub === 'add') {
+                if (!rule) return ['Usage: firewall add <rule>'];
+                const result: string = await invoke('add_firewall_rule', { userId: user.id, rule });
+                return [result];
+            }
+            if (sub === 'remove') {
+                if (!rule) return ['Usage: firewall remove <rule>'];
+                const result: string = await invoke('remove_firewall_rule', { userId: user.id, rule });
+                return [result];
+            }
+            return ['Usage: firewall list|add|remove <rule>'];
+        } catch (err) {
+            return [err as string];
         }
-        if (sub === 'remove') {
-          if (!rule) return ['Usage: firewall remove <rule>']
-          setFirewallRules(prev => prev.filter(r => r !== rule))
-          return [`Rule removed: "${rule}"`]
-        }
-        return ['Usage: firewall list|add|remove <rule>']
+
 
       case 'ipconfig':
       case 'ifconfig':
@@ -118,7 +155,7 @@ export default function Console() {
           'Reply from 192.168.1.1: bytes=32 time=14ms TTL=64',
           'Reply from 192.168.1.1: bytes=32 time=10ms TTL=64',
           'Ping statistics for 192.168.1.1:',
-          '    Packets: Sent = 3, Received = 3, Lost = 0 (0% loss),',
+          '    Packets: Sent = 3, Received = 3, Lost = 0 (0% loss),'
         ]
 
       case 'traceroute':
@@ -166,10 +203,10 @@ export default function Console() {
   }
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim()) return
-    const output = runCommand(input)
+    const output = await runCommand(input)
     setLines((prev) => [...prev, { input, output }])
     setHistory((prev) => [input, ...prev])
     setInput('')
@@ -205,11 +242,11 @@ export default function Console() {
             {line.input && (
               <div className='mt-2'>
                 <span className="text-primary font-bold">PS {cwd}&gt; </span>
-                <span className="text-primary">{line.input}</span>
+                <span className="text-white">{line.input}</span>
               </div>
             )}
             {line.output.map((out, i) => (
-              <div key={i} className="text-primary">{out}</div>
+              <div key={i} className="text-white">{out}</div>
             ))}
           </div>
         ))}

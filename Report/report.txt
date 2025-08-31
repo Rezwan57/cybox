@@ -10,7 +10,7 @@ Cybox is a cross-platform desktop application built on a modern technology stack
 
 *   **Frontend:** The user interface is developed with Next.js and React, utilizing TypeScript for type safety and Tailwind CSS for styling. This creates a responsive and visually appealing desktop environment.
 *   **Backend:** The backend is powered by Rust using the Tauri framework. This allows for the creation of a secure and performant desktop application with access to native system functionalities.
-*   **Database:** The application uses a local SQLite database (cybox.db) to store user data, application states, and scenario progress.
+*   **Database:** The application uses a local MySQL to store user data, application states, and scenario progress.
 
 **3. Features & Functionality**
 
@@ -22,7 +22,7 @@ Cybox features a suite of simulated applications, each designed to play a role i
 *   **Email App:** An email client for receiving and sending messages, which will likely be a key component in phishing and social engineering scenarios.
 *   **File Manager:** A graphical file explorer for navigating the simulated file system, used for digital forensics and locating critical files.
 *   **Settings:** An application for configuring the simulated OS, which may contain vulnerabilities or misconfigurations for the user to discover.
-*   **Task App & Whiteboard:** Tools for organization and planning, allowing users to track their progress and strategize their approach to challenges.
+*   **Task App** Tools for organization and planning, allowing users to track their progress and strategize their approach to challenges.
 
 **4. Gameplay & Scenarios**
 

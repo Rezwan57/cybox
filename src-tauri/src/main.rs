@@ -15,6 +15,8 @@ fn main() {
             handlers::task::verify_file_encryption,
             handlers::task::verify_hidden_file,
             handlers::task::verify_email_classification,
+            handlers::task::verify_strong_password_task,
+            handlers::task::reset_user_task,
             // Bank Commands
             handlers::bank::award_points,
             // Existing Commands
@@ -39,7 +41,15 @@ fn main() {
             handlers::mail::delete_email,
             handlers::mail::classify_email,
             handlers::settings::get_settings,
-            handlers::settings::update_settings
+            handlers::settings::update_settings,
+            handlers::fs::encrypt_file,
+            handlers::fs::is_file_encrypted,
+            handlers::fs::decrypt_file_content,
+
+            // Firewall Commands
+            handlers::firewall::list_firewall_rules,
+            handlers::firewall::add_firewall_rule,
+            handlers::firewall::remove_firewall_rule
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri app");

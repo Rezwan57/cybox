@@ -3,8 +3,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
-// --- TypeScript Interfaces ---
-
 export interface User {
   id: number;
   name: string;
@@ -45,15 +43,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setUser(null);
-    setPurchasedServices([]); // Clear services on logout
+    setPurchasedServices([]); 
   };
 
   const fetchPurchasedServices = useCallback(async () => {
     if (user) {
       try {
         const serviceIds = await invoke<number[]>('get_user_services', { userId: user.id });
-        // Assuming you have a way to get full service details from IDs
-        // For now, let's assume we can fetch all services and filter
         const allServices = await invoke<Service[]>('get_all_services');
         const userServices = allServices.filter(s => serviceIds.includes(s.id));
         setPurchasedServices(userServices);

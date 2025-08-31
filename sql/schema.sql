@@ -86,30 +86,24 @@ INSERT INTO universal_tasks (id, title, description, learning_module, points, ta
  'Cybersecurity is the practice of protecting systems, networks, and programs from digital attacks. These cyberattacks are usually aimed at accessing, changing, or destroying sensitive information; extorting money from users; or interrupting normal business processes. A successful cybersecurity approach has multiple layers of protection spread across the computers, networks, programs, or data that one intends to keep safe.',
  50, 'knowledge', NULL, 1),
 
-(2, 'Level 2: Password Strength',
- 'Learn how to create strong, effective passwords and understand the principles of password security.',
- 'A strong password is a critical component of online security. It should be long (at least 12 characters), complex (containing a mix of uppercase and lowercase letters, numbers, and symbols), and unique (not reused across different accounts). Avoid using easily guessable information like birthdays or common words. Password managers can help you generate and store strong, unique passwords for all your accounts.',
- 75, 'knowledge', NULL, 2),
+(2, 'Level 2: Create a Strong Password',
+ 'Go to the settings and create a new, strong password for your account. The password must be at least 12 characters long and contain a mix of uppercase and lowercase letters, numbers, and symbols.',
+ NULL,
+ 100, 'action', NULL, 2),
 
 (3, 'Level 3: Spotting Phishing Emails',
  'Go to the Email app and correctly classify the phishing and spam emails.',
  'Phishing is a type of social engineering attack often used to steal user data, including login credentials and credit card numbers. It occurs when an attacker, masquerading as a trusted entity, dupes a victim into opening an email, instant message, or text message. The recipient is then tricked into clicking a malicious link, which can lead to the installation of malware, the freezing of their system as part of a ransomware attack or the revealing of sensitive information. Look for red flags like generic greetings, urgent language, suspicious links, and poor grammar.',
  100, 'action', '{"required_classifications": [{"universal_email_id": 1, "classification": "phishing"}, {"universal_email_id": 3, "classification": "spam"}]}', 3),
 
-(4, 'Level 4: The Multi-Hash Challenge',
- 'Your account is protected by a multi-hash authentication. You need to crack 5 MD5 hashes to get the passwords. Check your email from admin@cybox.app for the hashes.',
- NULL,
- 150, 'action', '{"passwords": ["User321", "adminIam230", "mod78mod", "Klein679", "Roco89080"]}', 4),
+(4, 'Level 4: Encrypt the Evidence', 'A sensitive file is located at "/home/user/sensitive_data.txt". Encrypt it with the password "TopSecret#9900" to protect it.', NULL, 200, 'action', '{"file_path": "/home/user/sensitive_data.txt", "password": "TopSecret#9900"}', 4),
 
-(5, 'Level 5: Encrypt the Evidence',
- 'A sensitive file is located at ''/home/user/sensitive_data.txt''. Encrypt it with the password ''secret123'' to protect it.',
- NULL,
- 200, 'action', '{"file_path": "/home/user/sensitive_data.txt", "password": "secret123"}', 5),
+(5, 'Level 5: The Multi-Hash Challenge', 'Your account is protected by a multi-hash authentication. You need to crack 5 MD5 hashes to get the passwords. Check your email from admin@cybox.app for the hashes.', NULL, 150, 'action', '{"passwords": ["User321", "adminIam230", "mod78mod", "Klein679", "Roco89080"]}', 5),
 
 (6, 'Level 6: Find the Hidden Message',
  'A secret message is hidden in a file somewhere in the system. Find the file and submit its content.',
  NULL,
- 250, 'action', '{"file_path": "/var/log/hidden_message.txt", "content": "c_y_b_e_r_s_e_c_u_r_i_t_y"}', 6);
+ 250, 'action', '{"file_path": "/var/log/hidden_message.txt", "content": "c_y_b_e_r_s_e_c_u_r_i_t_y"}', 6)
 
 
 CREATE TABLE services (
@@ -190,4 +184,44 @@ d41d8cd98f00b204e9800998ecf8427e
 
 
 
-UN15YRXUHYH8
+CREATE TABLE encrypted_files (
+    file_path VARCHAR(255) NOT NULL,
+    user_id INT NOT NULL,
+    PRIMARY KEY (file_path, user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE firewall_rules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+   rule TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+ UPDATE universal_tasks
+ SET
+     title = CASE id
+        WHEN 4 THEN 'Level 4: Encrypt the Evidence'
+        WHEN 5 THEN 'Level 5: The Multi-Hash Challenge'
+    END,
+    description = CASE id
+         WHEN 4 THEN 'A sensitive file is located at ''/home/user/sensitive_data.txt''. Encrypt it with the password ''TopSecret#9900'' to protect 
+      it.'
+         WHEN 5 THEN 'Your account is protected by a multi-hash authentication. You need to crack 5 MD5 hashes to get the passwords. Check your 
+      email from admin@cybox.app for the hashes.'
+    END,
+     points = CASE id
+         WHEN 4 THEN 200
+         WHEN 5 THEN 150
+    END,
+     task_data = CASE id
+        WHEN 4 THEN '{\"file_path\": \"/home/user/sensitive_data.txt\", \"password\": \"TopSecret#9900\"}'
+         WHEN 5 THEN '{\"passwords\": [\"User321\", \"adminIam230\", \"mod78mod\", \"Klein679\", \"Roco89080\"]}'
+     END,
+     level = CASE id
+         WHEN 4 THEN 4
+         WHEN 5 THEN 5
+     END
+WHERE id IN (4, 5);

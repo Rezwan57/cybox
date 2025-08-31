@@ -70,6 +70,24 @@ pub fn create_account(request: CreateUserRequest) -> Result<String, String> {
             )?;
         }
 
+        // Populate user_tasks with universal tasks
+        let universal_task_ids: Vec<u64> = tx.exec_map(
+            "SELECT id FROM universal_tasks",
+            (),
+            |id: u64| id,
+        )?;
+
+        for universal_task_id in universal_task_ids {
+            tx.exec_drop(
+                r"INSERT INTO user_tasks (user_id, universal_task_id, status)
+                  VALUES (:user_id, :universal_task_id, 'To Do')",
+                params! {
+                    "user_id" => user_id,
+                    "universal_task_id" => universal_task_id,
+                }
+            )?;
+        }
+
         Ok(())
     })();
 

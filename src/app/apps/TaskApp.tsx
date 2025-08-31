@@ -118,7 +118,7 @@ const ActionTask = ({ task, onComplete, isLocked, userId }: { task: DisplayTask,
       if (task.title.includes('Crack the Password')) {
         result = await invoke('verify_password_crack', { password: inputValue });
       } else if (task.title.includes('Encrypt the Evidence')) {
-        result = await invoke('verify_file_encryption', { filePath: task.task_data_parsed.file_path });
+        result = await invoke('verify_file_encryption', { filePath: task.task_data_parsed.file_path, userId });
       } else if (task.title.includes('Find the Hidden Message')) {
         result = await invoke('verify_hidden_file', { content: inputValue });
       } else if (task.title.includes('Spotting Phishing Emails')) {
@@ -138,7 +138,7 @@ const ActionTask = ({ task, onComplete, isLocked, userId }: { task: DisplayTask,
 
   const renderTaskInput = () => {
     if (!task.task_data_parsed) return null;
-    if (task.level === 4) { // for level 4: the multi-factor challenge
+    if (task.level === 5) { // for level 5: the multi-factor challenge
         return <MultiFactorChallenge task={task} onComplete={onComplete} />;
     }
     if (task.title.includes('Crack the Password')) {

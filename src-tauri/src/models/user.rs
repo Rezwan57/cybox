@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, DateTime, Utc};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
@@ -64,7 +64,9 @@ impl From<mysql::Row> for User {
             name: row.get("name").unwrap_or_default(),
             ip: row.get("ip").unwrap_or_default(),
             mac: row.get("mac").unwrap_or_default(),
-            created_at: row.get::<NaiveDateTime, _>("created_at").unwrap(),
+            created_at: row.get::<NaiveDateTime, _>("created_at").unwrap_or_else(|| {
+                DateTime::<Utc>::from_timestamp(0, 0).unwrap().naive_utc()
+            }),
         }
     }
 }

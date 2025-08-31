@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback  } from "react";
 import { icons } from '@/data/icons';
 import StartingScreen from "../components/Screens/StartingScreen"; // Corrected typo
 import { AuthProvider, useAuth, Service } from "./AuthContext";
+import { FileSystemProvider } from './FileSystemContext';
 
 interface AppState {
   isOpen: boolean;
@@ -19,6 +20,8 @@ interface AppContextType {
   minimizeApp: (app: string) => void;
   restoreApp: (app: string) => void;
   purchasedServices: Service[];
+  refetchTasks?: () => void;
+  triggerTaskUpdate: () => void;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -79,8 +82,14 @@ const AppContextProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const [taskUpdateTrigger, setTaskUpdateTrigger] = useState(0);
+
+  const triggerTaskUpdate = useCallback(() => {
+    setTaskUpdateTrigger(prev => prev + 1);
+  }, []);
+
   return (
-    <AppContext.Provider value={{ points, setPoints, apps, openApp, closeApp, minimizeApp, restoreApp, purchasedServices }}>
+    <AppContext.Provider value={{ points, setPoints, apps, openApp, closeApp, minimizeApp, restoreApp, purchasedServices, refetchTasks: undefined, triggerTaskUpdate }}>
       {children}
     </AppContext.Provider>
   );
@@ -121,15 +130,17 @@ export default function AppWrapper({
   }, []);
 
   if (isAppLoading && !hasShownLoading) {
-    // Corrected the onFinished handler and the component name
     return <StartingScreen onFinished={() => setIsAppLoading(false)} />;
   }
 
+
   return (
     <AuthProvider>
-      <AppContextProvider>
-        {children}
-      </AppContextProvider>
+      <FileSystemProvider>
+        <AppContextProvider>
+          {children}
+        </AppContextProvider>
+      </FileSystemProvider>
     </AuthProvider>
   );
 }

@@ -65,12 +65,147 @@ interface Settings {
 const sections = ['System', 'Account', 'Network', 'Security'] as const
 type Section = (typeof sections)[number]
 
+const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+  const checks = [
+    { label: "At least 12 characters", regex: /.{12,}/ },
+    { label: "An uppercase letter", regex: /[A-Z]/ },
+    { label: "A lowercase letter", regex: /[a-z]/ },
+    { label: "A number", regex: /\d/ },
+    { label: "A symbol", regex: /\W/ },
+  ];
+
+  return (
+    <div className="mt-4 space-y-1">
+      {checks.map((check, index) => (
+        <div key={index} className="flex items-center text-sm">
+          <span className={check.regex.test(password) ? "text-green-500" : "text-red-500"}>
+            {check.regex.test(password) ? "✓" : "✗"}
+          </span>
+          <span className="ml-2 text-neutral-300">{check.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const ChangePasswordModal = ({
+  isOpen,
+  onClose,
+  username,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  username: string;
+}) => {
+  const { user } = useAuth();
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const isPasswordStrong = (password: string) => {
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSymbol = /\W/.test(password);
+    return password.length >= 12 && hasUppercase && hasLowercase && hasDigit && hasSymbol;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (newPassword !== confirmPassword) {
+      setError("New passwords do not match.");
+      return;
+    }
+
+    if (!isPasswordStrong(newPassword)) {
+      setError("Password is not strong enough. Please meet all the requirements.");
+      return;
+    }
+
+    try {
+      const result = await invoke("change_password", {
+        name: username,
+        oldPassword,
+        newPassword,
+      });
+      setSuccess(result as string);
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      if (user) {
+        invoke("complete_task", { taskId: 2, userId: user.id });
+      }
+    } catch (err) {
+      setError(err as string);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-neutral-800 p-6 rounded-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-4">Change Password</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <input
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder="Old Password"
+              className="w-full p-2 rounded-md border border-neutral-700 bg-neutral-900 text-white"
+            />
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="New Password"
+              className="w-full p-2 rounded-md border border-neutral-700 bg-neutral-900 text-white"
+            />
+            <PasswordStrengthIndicator password={newPassword} />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm New Password"
+              className="w-full p-2 rounded-md border border-neutral-700 bg-neutral-900 text-white"
+            />
+          </div>
+          {error && <p className="text-red-500 mt-4">{error}</p>}
+          {success && <p className="text-green-500 mt-4">{success}</p>}
+          <div className="flex justify-end gap-4 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-neutral-600 text-white px-4 py-2 rounded hover:bg-neutral-700"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-primary text-black px-4 py-2 rounded hover:bg-teal-500"
+            >
+              Change Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 export default function SettingsApp() {
   const { user, purchasedServices } = useAuth()
   const [activeSection, setActiveSection] = useState<Section>('Security')
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true);
   const [serviceStatus, setServiceStatus] = useState<{[key: number]: boolean}>({});
+  const [isChangePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -209,7 +344,10 @@ export default function SettingsApp() {
               <div className="bg-neutral-800/50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-3 text-primary">Actions</h3>
                 <div className="space-y-2">
-                  <button className="bg-neutral-600/50 text-white px-4 py-2 rounded hover:bg-teal-500 w-full cursor-pointer">
+                  <button
+                    onClick={() => setChangePasswordModalOpen(true)}
+                    className="bg-neutral-600/50 text-white px-4 py-2 rounded hover:bg-teal-500 w-full cursor-pointer"
+                  >
                     Change Master Password
                   </button>
                   <button className="bg-neutral-600/50 text-primary px-4 py-2 rounded hover:bg-teal-700 w-full cursor-pointer">
@@ -413,6 +551,13 @@ export default function SettingsApp() {
           </div>
         )}
       </main>
+    {user && (
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setChangePasswordModalOpen(false)}
+        username={user.name}
+      />
+    )}
     </div>
   )
 }
