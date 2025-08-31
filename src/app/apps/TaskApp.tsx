@@ -38,10 +38,9 @@ const toTaskStatus = (status: string | undefined): TaskStatus => {
   if (status === 'To Do' || status === 'In Progress' || status === 'Completed') {
     return status;
   }
-  return 'To Do'; // Default 
+  return 'To Do';
 };
 
-// Components
 
 const MultiFactorChallenge = ({ task, onComplete }: { task: DisplayTask, onComplete: (taskId: number, points: number) => void }) => {
   const [passwords, setPasswords] = useState<string[]>(Array(5).fill(''));
@@ -138,7 +137,7 @@ const ActionTask = ({ task, onComplete, isLocked, userId }: { task: DisplayTask,
 
   const renderTaskInput = () => {
     if (!task.task_data_parsed) return null;
-    if (task.level === 5) { // for level 5: the multi-factor challenge
+    if (task.level === 5) {
         return <MultiFactorChallenge task={task} onComplete={onComplete} />;
     }
     if (task.title.includes('Crack the Password')) {
@@ -147,9 +146,10 @@ const ActionTask = ({ task, onComplete, isLocked, userId }: { task: DisplayTask,
       return <p className="text-neutral-300">Click the button below when you have encrypted the file.</p>;
     } else if (task.title.includes('Find the Hidden Message')) {
       return <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Enter the hidden message" className="w-full p-2 rounded-md border border-neutral-700 bg-neutral-800 text-white" />;
-    } else if (task.title.includes('Spotting Phishing Emails')) {
-        return <p className="text-neutral-300">Go to the Email app and classify the emails you think are suspicious.</p>;
-    }
+    } 
+    // else if (task.title.includes('Spotting Phishing Emails')) {
+    //     return <p className="text-neutral-300">Go to the Email app and classify the emails you think are suspicious.</p>;
+    // }
     return null;
   };
 
@@ -245,33 +245,33 @@ export default function TaskApp() {
     }
   };
 
-  const highestUnlockedLevel = useMemo(() => {
-    const tasksByLevel: { [level: number]: DisplayTask[] } = {};
-    tasks.forEach(task => {
-      if (!tasksByLevel[task.level]) {
-        tasksByLevel[task.level] = [];
-      }
-      tasksByLevel[task.level].push(task);
-    });
+  // const highestUnlockedLevel = useMemo(() => {
+  //   const tasksByLevel: { [level: number]: DisplayTask[] } = {};
+  //   tasks.forEach(task => {
+  //     if (!tasksByLevel[task.level]) {
+  //       tasksByLevel[task.level] = [];
+  //     }
+  //     tasksByLevel[task.level].push(task);
+  //   });
 
-    const levels = Object.keys(tasksByLevel).map(Number).sort((a, b) => a - b);
-    for (const level of levels) {
-      const allPreviousLevelsComplete = levels
-        .filter(l => l < level)
-        .every(l => tasksByLevel[l].every(t => t.status === 'Completed'));
+  //   const levels = Object.keys(tasksByLevel).map(Number).sort((a, b) => a - b);
+  //   for (const level of levels) {
+  //     const allPreviousLevelsComplete = levels
+  //       .filter(l => l < level)
+  //       .every(l => tasksByLevel[l].every(t => t.status === 'Completed'));
       
-      if (!allPreviousLevelsComplete) {
-        return level -1 > 0 ? level -1 : 1; // Return the last fully completed level
-      }
-    }
-    // If all levels are complete, all are unlocked
-    return levels.length > 0 ? Math.max(...levels) : 1;
-  }, [tasks]);
+  //     if (!allPreviousLevelsComplete) {
+  //       return level -1 > 0 ? level -1 : 1; // Return the last fully completed level
+  //     }
+  //   }
+  //   // If all levels are complete, all are unlocked
+  //   return levels.length > 0 ? Math.max(...levels) : 1;
+  // }, [tasks]);
 
   const isLevelLocked = (level: number) => {
-      if (level === 1) return false; // Level 1 is always unlocked
+      if (level === 1) return false; 
       const prevLevelTasks = tasks.filter(t => t.level === level - 1);
-      if (prevLevelTasks.length === 0) return false; // If prev level has no tasks, it's unlocked
+      if (prevLevelTasks.length === 0) return false; 
       return !prevLevelTasks.every(t => t.status === 'Completed');
   }
 

@@ -19,7 +19,7 @@ const BankDashboard = () => {
   const [account, setAccount] = useState<BankAccount | null>(null);
   const [transactions, setTransactions] = useState([
     { id: 1, to: "Store", amount: 75.00 },
-    { id: 2, to: "Task Rewards", amount: -25.00 }, // Negative for incoming
+    { id: 2, to: "Task Rewards", amount: -25.00 },
   ]);
 
   useEffect(() => {

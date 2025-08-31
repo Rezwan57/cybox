@@ -29,7 +29,7 @@ const Dock: React.FC<DockProps> = ({ onAppClick, openApps }) => {
   })
 
   return (
-    <nav className="fixed bottom-2 left-1/2 -translate-x-1/2 z-50 flex gap-4 bg-black/20 backdrop-blur-md p-3 pb-1 rounded-[20px] shadow-2xl transform-gpu border-2 border-teal-400">
+    <nav className="fixed bottom-2 left-1/2 -translate-x-1/2 z-50 flex gap-4 bg-black/10 backdrop-blur-md p-3 pb-1 rounded-[20px] shadow-2xl transform-gpu border-2 border-teal-400">
       {visibleIcons.map((Icon, index) => {
         const isOpen = openApps.includes(Icon.name)
         const isClickedHere = isClicked === index

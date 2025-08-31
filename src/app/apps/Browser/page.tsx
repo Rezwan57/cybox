@@ -1,7 +1,11 @@
 'use client'
 import React, { useState } from 'react';
 import { FaHome, FaArrowLeft, FaArrowRight, FaRedo, FaLock } from 'react-icons/fa';
+import WhatIsCybersecurity from './learning/WhatIsCybersecurity';
 import ConsoleTechniquesPage from './learning/ConsoleTechniquesPage';
+import CreateAStrongPassword from './learning/CreateAStrongPassword';
+import SpottingEmails from './learning/SpottingEmails';
+import TheMultiHash from './learning/TheMultiHash';
 
 const HomePage = ({ setUrl }: { setUrl: (url: string) => void }) => (
   <div className="p-8 text-white">
@@ -12,14 +16,42 @@ const HomePage = ({ setUrl }: { setUrl: (url: string) => void }) => (
         <p className="font-bold">Learn: Console Techniques</p>
         <p className="text-sm text-neutral-300">Master file encryption using the Console.</p>
       </button>
+      <button onClick={() => setUrl('cybox://learn/cybersecurity')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
+        <p className="font-bold">Learn: What is Cybersecurity?</p>
+        <p className="text-sm text-neutral-300">Understand the basics of digital security.</p>
+      </button>
+      <button onClick={() => setUrl('cybox://learn/strong-password')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
+        <p className="font-bold">Learn: Create a Strong Password</p>
+        <p className="text-sm text-neutral-300">Learn to protect your accounts with strong passwords.</p>
+      </button>
+      <button onClick={() => setUrl('cybox://learn/spotting-emails')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
+        <p className="font-bold">Learn: Spotting Phishing Emails</p>
+        <p className="text-sm text-neutral-300">Identify and avoid malicious emails.</p>
+      </button>
+      <button onClick={() => setUrl('cybox://learn/multi-hash')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
+        <p className="font-bold">Learn: The Multi-Hash</p>
+        <p className="text-sm text-neutral-300">Explore advanced hashing techniques.</p>
+      </button>
     </div>
   </div>
 );
 
 
 const PageRenderer = ({ url }: { url: string }) => {
+  if (url === 'cybox://learn/cybersecurity') {
+    return <WhatIsCybersecurity />;
+  }
+  if (url === 'cybox://learn/strong-password') {
+    return <CreateAStrongPassword />;
+  }
+  if (url === 'cybox://learn/spotting-emails') {
+    return <SpottingEmails />;
+  }
   if (url === 'cybox://learn/console') {
     return <ConsoleTechniquesPage />;
+  }
+  if (url === 'cybox://learn/multi-hash') {
+    return <TheMultiHash />;
   }
   if (url.startsWith('cybox://')) {
     const page = url.replace('cybox://', '');

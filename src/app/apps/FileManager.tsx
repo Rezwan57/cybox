@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { FaFolder, FaFileAlt, FaLock } from 'react-icons/fa'
+import { FaFolder, FaFileAlt  } from 'react-icons/fa'
+import { RiFolderLockFill } from "react-icons/ri";
 import { useAuth } from '@/Context/AuthContext'
 import { invoke } from '@tauri-apps/api/core'
 import { useFileSystem } from '@/Context/FileSystemContext';
@@ -58,7 +59,7 @@ const FileContentPopup = ({ file, onClose, isEncrypted, user, setIsSensitiveFile
         <div className="p-4">
           {isSensitiveFile && isEncrypted && !decryptedContent ? (
             <div className="flex flex-col items-center justify-center h-full">
-              <FaLock className="text-red-500 text-6xl mb-4" />
+              <RiFolderLockFill  className="text-red-500 text-6xl mb-4" />
               <h3 className="text-xl mb-4">This file is encrypted.</h3>
               <input
                 type="password"
@@ -74,7 +75,7 @@ const FileContentPopup = ({ file, onClose, isEncrypted, user, setIsSensitiveFile
             <div className="flex flex-col items-center justify-center h-full">
               <FaFileAlt className="text-primary text-6xl mb-4" />
               <h3 className="text-xl mb-4">This file is not encrypted.</h3>
-              <button
+              {/* <button
                 onClick={async () => {
                   if (!file.path || !user?.id) return;
                   try {
@@ -88,12 +89,12 @@ const FileContentPopup = ({ file, onClose, isEncrypted, user, setIsSensitiveFile
                 className="bg-green-600 text-white px-4 py-2 rounded-md"
               >
                 Encrypt File
-              </button>
+              </button> */}
               {error && <p className="text-red-500 mt-4">{error}</p>}
             </div>
           ) : (
             file.type === 'file' ? (
-              <pre className="px-5 py-3 rounded-md overflow-auto text-md mb-4 max-h-60 select-text">
+              <pre className="px-5 py-3 rounded-md overflow-auto text-md mb-4 h-full select-text">
                 {decryptedContent ?? file.content}
               </pre>
             ) : (
@@ -149,7 +150,7 @@ function FileManager() {
               <FaFolder className="text-primary text-6xl" />
             ) : (
               item.name === 'sensitive_data.txt' && isSensitiveFileEncrypted ? (
-                <FaLock className="text-red-500 text-6xl" />
+                <RiFolderLockFill  className="text-red-500 text-6xl" />
               ) : (
                 <FaFileAlt className="text-primary text-6xl" />
               )
