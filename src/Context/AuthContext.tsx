@@ -77,7 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  // Fetch services when user logs in
+  //    fetch services
+  
   useEffect(() => {
     if (user) {
       fetchPurchasedServices();

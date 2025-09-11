@@ -76,7 +76,7 @@ pub fn get_user_tasks(user_id: u64) -> Result<Vec<UserTask>, String> {
 
 
 
-/// task  complete  and award points
+/// task  complete    and award points
 #[tauri::command]
 pub fn complete_task(task_id: u64, user_id: u64) -> Result<String, String> {
     let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;

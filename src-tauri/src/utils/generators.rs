@@ -1,7 +1,7 @@
 use rand::Rng;
 use chrono::{Datelike, Local};
 
-// Helper function to generate random password
+// random password
 pub fn generate_password(length: usize) -> String {
     const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
     let mut rng = rand::thread_rng();
@@ -13,7 +13,7 @@ pub fn generate_password(length: usize) -> String {
         .collect()
 }
 
-// Helper function to generate random IP address
+// random IP 
 pub fn generate_ip_address() -> String {
     let mut rng = rand::thread_rng();
     format!(
@@ -25,7 +25,7 @@ pub fn generate_ip_address() -> String {
     )
 }
 
-// Helper function to generate random MAC address
+// random MAC 
 pub fn generate_mac_address() -> String {
     let mut rng = rand::thread_rng();
     format!(
@@ -45,21 +45,24 @@ pub fn generate_account_number() -> String {
     number.to_string()
 }
 
-// starting with 0057
+// 0057
 pub fn generate_card_number() -> String {
     let mut rng = rand::thread_rng();
     let remaining_digits: u64 = rng.gen_range(100000000000..999999999999);
     format!("0057{}", remaining_digits)
 }
 
-// generate CVC
+// CVC
 pub fn generate_cvc() -> String {
     let mut rng = rand::thread_rng();
     let cvc: u16 = rng.gen_range(100..999);
     cvc.to_string()
 }
 
-//  generate expiry date 2 years from today
+
+
+
+// Expiry date
 pub fn generate_expiry_date() -> String {
     let now = Local::now();
     let future_year = now.year() + 2;
