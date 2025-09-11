@@ -27,7 +27,6 @@ pub fn login(name: String, password: String) -> Result<User, String> {
     }).map_err(|e| e.to_string())?;
 
     row.map(|r| {
-        // Explicitly define the tuple type to fix the type inference error
         User::from(r)
     }).ok_or_else(|| "Invalid username or password".to_string())
 }
@@ -65,7 +64,7 @@ pub fn change_password(
         return Err("Invalid current password".to_string());
     }
 
-    // Check new password strength
+    // Check new password 
     if !is_password_strong(&new_password) {
         return Err("New password is not strong enough. It must be at least 12 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.".to_string());
     }

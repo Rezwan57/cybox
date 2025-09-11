@@ -9,28 +9,27 @@ import TheMultiHash from './learning/TheMultiHash';
 
 const HomePage = ({ setUrl }: { setUrl: (url: string) => void }) => (
   <div className="p-8 text-white">
-    <h1 className="text-4xl font-bold mb-4 text-center">Cyber Browser</h1>
-    <p className="text-lg text-center mb-8">Your gateway to the simulated web.</p>
+    <h1 className="text-4xl font-bold mb-10 text-center">Cyber Browser</h1>
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <button onClick={() => setUrl('cybox://learn/console')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
-        <p className="font-bold">Learn: Console Techniques</p>
-        <p className="text-sm text-neutral-300">Master file encryption using the Console.</p>
-      </button>
-      <button onClick={() => setUrl('cybox://learn/cybersecurity')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
+      <button onClick={() => setUrl('cybox://learn/cybersecurity')} className="bg-neutral-700 p-4 rounded-lg hover:text-neutral-900 hover:bg-teal-400 transition-colors col-span-full">
         <p className="font-bold">Learn: What is Cybersecurity?</p>
-        <p className="text-sm text-neutral-300">Understand the basics of digital security.</p>
+        <p className="text-sm ">Understand the basics of digital security.</p>
       </button>
-      <button onClick={() => setUrl('cybox://learn/strong-password')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
+      <button onClick={() => setUrl('cybox://learn/strong-password')} className="bg-neutral-700 p-4 rounded-lg hover:text-neutral-900 hover:bg-teal-400 transition-colors col-span-full">
         <p className="font-bold">Learn: Create a Strong Password</p>
-        <p className="text-sm text-neutral-300">Learn to protect your accounts with strong passwords.</p>
+        <p className="text-sm ">Learn to protect your accounts with strong passwords.</p>
       </button>
-      <button onClick={() => setUrl('cybox://learn/spotting-emails')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
+      <button onClick={() => setUrl('cybox://learn/spotting-emails')} className="bg-neutral-700 p-4 rounded-lg hover:text-neutral-900 hover:bg-teal-400 transition-colors col-span-full">
         <p className="font-bold">Learn: Spotting Phishing Emails</p>
-        <p className="text-sm text-neutral-300">Identify and avoid malicious emails.</p>
+        <p className="text-sm ">Identify and avoid malicious emails.</p>
       </button>
-      <button onClick={() => setUrl('cybox://learn/multi-hash')} className="bg-neutral-700 p-4 rounded-lg hover:bg-orange-700 transition-colors col-span-full">
+      <button onClick={() => setUrl('cybox://learn/console')} className="bg-neutral-700 p-4 rounded-lg hover:text-neutral-900 hover:bg-teal-400 transition-colors col-span-full">
+        <p className="font-bold">Learn: Console Techniques</p>
+        <p className="text-sm ">Master file encryption using the Console.</p>
+      </button>
+      <button onClick={() => setUrl('cybox://learn/multi-hash')} className="bg-neutral-700 p-4 rounded-lg hover:text-neutral-900 hover:bg-teal-400 transition-colors col-span-full">
         <p className="font-bold">Learn: The Multi-Hash</p>
-        <p className="text-sm text-neutral-300">Explore advanced hashing techniques.</p>
+        <p className="text-sm ">Explore advanced hashing techniques.</p>
       </button>
     </div>
   </div>

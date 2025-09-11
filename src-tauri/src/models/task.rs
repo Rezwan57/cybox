@@ -23,7 +23,6 @@ pub struct UserTask {
     pub created_at: NaiveDateTime,
 }
 
-// Keeping the old Task struct for now, will refactor handlers later
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Task {
     pub id: u64,

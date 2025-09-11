@@ -18,7 +18,7 @@ function Header() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(moment().format("h:mm A, dddd D MM YYYY"));
+      setTime(moment().format("h:mm A, dddd D MMM YYYY"));
     }, 1000);
     return () => clearInterval(interval);
   }, []);

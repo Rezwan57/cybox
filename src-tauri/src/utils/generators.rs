@@ -39,28 +39,27 @@ pub fn generate_mac_address() -> String {
     )
 }
 
-// Helper function to generate account number
 pub fn generate_account_number() -> String {
     let mut rng = rand::thread_rng();
     let number: u64 = rng.gen_range(1000000000..9999999999);
     number.to_string()
 }
 
-// Helper function to generate card number starting with 0057
+// starting with 0057
 pub fn generate_card_number() -> String {
     let mut rng = rand::thread_rng();
     let remaining_digits: u64 = rng.gen_range(100000000000..999999999999);
     format!("0057{}", remaining_digits)
 }
 
-// Helper function to generate CVC
+// generate CVC
 pub fn generate_cvc() -> String {
     let mut rng = rand::thread_rng();
     let cvc: u16 = rng.gen_range(100..999);
     cvc.to_string()
 }
 
-// Helper function to generate expiry date (2 years from today)
+//  generate expiry date 2 years from today
 pub fn generate_expiry_date() -> String {
     let now = Local::now();
     let future_year = now.year() + 2;

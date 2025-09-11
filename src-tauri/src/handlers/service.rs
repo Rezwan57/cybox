@@ -74,39 +74,44 @@ pub fn purchase_service(user_id: i32, service_id: i32, price: Decimal) -> Result
     let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
     let mut tx = conn.start_transaction(mysql::TxOpts::default()).map_err(|e| e.to_string())?;
 
+    // Get balance and service name
     let balance: Option<Decimal> = tx.exec_first(
         "SELECT balance FROM bank_accounts WHERE user_id = :user_id FOR UPDATE",
         params! { "user_id" => user_id }
     ).map_err(|e| e.to_string())?;
+    
+    let service_name: Option<String> = tx.exec_first(
+        "SELECT name FROM services WHERE id = :service_id",
+        params! { "service_id" => service_id }
+    ).map_err(|e| e.to_string())?;
 
-    let balance = match balance {
-        Some(b) => b,
-        None => {
-            tx.rollback().map_err(|e| e.to_string())?;
-            return Err("Bank account not found".to_string());
-        }
-    };
+    let balance = balance.ok_or_else(|| "Bank account not found".to_string())?;
+    let service_name = service_name.ok_or_else(|| "Service not found".to_string())?;
 
     if balance < price {
         tx.rollback().map_err(|e| e.to_string())?;
         return Err("Not enough points".to_string());
     }
 
-    if let Err(e) = tx.exec_drop(
+    // Deduct price from balance
+    tx.exec_drop(
         "UPDATE bank_accounts SET balance = balance - :price WHERE user_id = :user_id",
         params! { "price" => price, "user_id" => user_id }
-    ) {
-        tx.rollback().map_err(|e| e.to_string())?;
-        return Err(e.to_string());
-    }
+    ).map_err(|e| e.to_string())?;
 
-    if let Err(e) = tx.exec_drop(
+    // Add service to user
+    tx.exec_drop(
         "INSERT IGNORE INTO user_services (user_id, service_id) VALUES (:user_id, :service_id)",
         params! { "user_id" => user_id, "service_id" => service_id }
-    ) {
-        tx.rollback().map_err(|e| e.to_string())?;
-        return Err(e.to_string());
-    }
+    ).map_err(|e| e.to_string())?;
+
+    // Record transaction
+    let description = format!("Purchase: {}", service_name);
+    let amount = -price;
+    tx.exec_drop(
+        "INSERT INTO bank_transactions (user_id, description, amount) VALUES (:user_id, :description, :amount)",
+        params! { "user_id" => user_id, "description" => description, "amount" => amount }
+    ).map_err(|e| e.to_string())?;
 
     tx.commit().map_err(|e| e.to_string())?;
 

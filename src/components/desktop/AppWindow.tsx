@@ -17,6 +17,8 @@ interface AppWindowProps {
   onClose: () => void
   onMinimize: () => void
   onMaximize: () => void
+  onFocus: () => void
+  zIndex: number
   children: React.ReactNode
 }
 
@@ -36,6 +38,8 @@ export default function AppWindow({
   onClose,
   onMinimize,
   onMaximize,
+  onFocus,
+  zIndex,
   children,
 }: AppWindowProps) {
   const [isMaximized, setIsMaximized] = useState(false)
@@ -143,6 +147,7 @@ export default function AppWindow({
           dragControls={dragControls}
           dragListener={false}
           dragMomentum={false}
+          onMouseDown={onFocus}
           variants={windowVariants}
           initial="hidden"
           animate="visible"
@@ -166,7 +171,7 @@ export default function AppWindow({
                   borderRadius: '1rem',
                 }),
             position: 'fixed',
-            zIndex: 40,
+            zIndex,
             backgroundColor: 'rgba(15,15,15,0.6)',
             backdropFilter: 'blur(30px)',
             border: '3px solid var(--primary)',

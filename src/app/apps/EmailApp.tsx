@@ -110,7 +110,7 @@ export default function EmailApp() {
   if (isComposing) {
     return (
       <div className="w-full h-full flex flex-col text-white p-6">
-        <form /* onSubmit={handleSendEmail} */>
+        <form>
           <h2 className="text-2xl font-bold mb-4">New Email</h2>
           <div className="mb-4">
             <label htmlFor="to" className="block text-sm font-medium text-neutral-400 mb-1">To</label>

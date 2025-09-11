@@ -69,11 +69,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         serviceId: service.id,
         price: service.price,
       });
-      // Add the newly purchased service to the list
+      
       setPurchasedServices(prev => [...prev, service]);
     } catch (error) {
       console.error("Purchase failed:", error);
-      throw error; // Re-throw to be caught in the component
+      throw error; 
     }
   };
   

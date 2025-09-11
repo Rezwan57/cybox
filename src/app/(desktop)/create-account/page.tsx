@@ -20,7 +20,6 @@ export default function Page() {
     setError("");
     setSuccess("");
 
-    // Validation
     if (!deviceName.trim()) {
       setError("Please enter a device name");
       return;
@@ -65,7 +64,6 @@ export default function Page() {
 
       setSuccess("Account created successfully!");
       
-      alert("Account created successfully! You can now log in.");
 
       setTimeout(() => {
         router.push("/");
@@ -114,7 +112,7 @@ export default function Page() {
         >
           <div className="text-center mb-4">
             <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-            <p className="text-gray-300">Join us today</p>
+            <p className="text-gray-300">Get start your Cyber Experience</p>
           </div>
 
           {error && (

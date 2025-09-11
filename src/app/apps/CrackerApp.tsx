@@ -38,7 +38,7 @@ export default function CrackerApp() {
 
       setResult('Password not found in the common password list.');
       setIsCracking(false);
-    }, 1000); // Simulate cracking time
+    }, 1000); 
   };
 
   return (

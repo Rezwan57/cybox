@@ -1,5 +1,5 @@
 export const icons = [
-  { name: 'Home', icon: '/Icons/Home.svg', required: true },
+  // { name: 'Home', icon: '/Icons/Home.svg', required: true },
   { name: 'Files', icon: '/Icons/FileManager.svg', required: true },
   { name: 'Console', icon: '/Icons/Console.svg', required: true },
   { name: 'Settings', icon: '/Icons/Setting.svg', required: true },

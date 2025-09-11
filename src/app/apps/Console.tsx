@@ -70,6 +70,7 @@ export default function Console() {
           'netstat                    Show open network ports',
           'nslookup <domain>          Simulate DNS query',
           'whois <domain>             Simulate WHOIS lookup',
+          'base64 --encode|--decode <string>   Encode or decode a Base64 string',
           'encrypt <file> --password <pass> Encrypt a file',
         ]
 
@@ -95,7 +96,7 @@ export default function Console() {
         try {
             if (!user) return ["No user session found."];
             const result = await invoke("encrypt_file", { filePath, password, userId: user.id });
-            triggerRefresh(); // Trigger refresh after successful encryption
+            triggerRefresh(); 
             return [result as string];
         } catch (err) {
             return [err as string];
@@ -197,6 +198,26 @@ export default function Console() {
           'Name Server: NS1.SIMULATED.NET',
         ]
 
+      case 'base64':
+        const subCommand = args[0];
+        const strToProcess = args.slice(1).join(' ');
+
+        if (!subCommand || !strToProcess) {
+          return ['Usage: base64 --encode|--decode <string>'];
+        }
+
+        try {
+          if (subCommand === '--decode' || subCommand === '-d') {
+            return [atob(strToProcess)];
+          } else if (subCommand === '--encode' || subCommand === '-e') {
+            return [btoa(strToProcess)];
+          } else {
+            return ['Usage: base64 --encode|--decode <string>'];
+          }
+        } catch (e) {
+          return ['Error: Invalid Base64 string.'];
+        }
+
       default:
         return [`'${base}' is not recognized as a valid command.`]
     }
@@ -242,11 +263,11 @@ export default function Console() {
             {line.input && (
               <div className='mt-2'>
                 <span className="text-primary font-bold">PS {cwd}&gt; </span>
-                <span className="text-white">{line.input}</span>
+                <span className="text-white select-text">{line.input}</span>
               </div>
             )}
             {line.output.map((out, i) => (
-              <div key={i} className="text-white">{out}</div>
+              <div key={i} className="text-white select-text">{out}</div>
             ))}
           </div>
         ))}

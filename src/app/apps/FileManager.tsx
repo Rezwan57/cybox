@@ -10,7 +10,7 @@ import { RxCross2 } from 'react-icons/rx'
 const mockFiles: FileItem[] = [
   { name: 'Notes.txt', type: 'file', content: 'Meeting Notes 2025-08-29:\n- Discuss Q3 financial results\n- Plan for new product launch\n- Review marketing strategy', path: undefined } as FileItem,
   { name: 'Projects', type: 'folder', content: undefined, path: undefined } as FileItem,
-  { name: 'Passwords.doc', type: 'file', content: 'Confidential Passwords (DO NOT SHARE):\nAdmin: P@ssw0rd123\nUser: MySecureP@ss\nGuest: guest123', path: undefined } as FileItem,
+  { name: 'code.txt', type: 'file', content: 'Fragment 2/2: 2nd key \nEndcoded in Base64: X3NfZV9jX3Vfcl9pX3RfeQ==', path: undefined } as FileItem,
   { name: 'Screenshots', type: 'folder', content: undefined, path: undefined } as FileItem,
   { name: 'sensitive_data.txt', type: 'file', path: '/home/user/sensitive_data.txt', content: '' } as FileItem,
 ]
@@ -44,7 +44,7 @@ const FileContentPopup = ({ file, onClose, isEncrypted, user, setIsSensitiveFile
   return (
     <div className="fixed inset-0 bg-neutral-900/80 flex items-center justify-center z-50">
       <div className="bg-neutral-800/50 backdrop-blur-2xl rounded-xl shadow-lg w-[90%] h-[90%] text-white overflow-hidden border-primary border-2">
-        {/* Title Bar */}
+        {/* Titlee*/}
         <div className="bg-neutral-900 px-4 py-2 flex items-center justify-between">
           <h2 className="text-md font-bold">{file.name}</h2>
           <button
@@ -55,7 +55,7 @@ const FileContentPopup = ({ file, onClose, isEncrypted, user, setIsSensitiveFile
           </button>
         </div>
 
-        {/* Content Area */}
+        {/* mainnn Area */}
         <div className="p-4">
           {isSensitiveFile && isEncrypted && !decryptedContent ? (
             <div className="flex flex-col items-center justify-center h-full">
@@ -75,21 +75,6 @@ const FileContentPopup = ({ file, onClose, isEncrypted, user, setIsSensitiveFile
             <div className="flex flex-col items-center justify-center h-full">
               <FaFileAlt className="text-primary text-6xl mb-4" />
               <h3 className="text-xl mb-4">This file is not encrypted.</h3>
-              {/* <button
-                onClick={async () => {
-                  if (!file.path || !user?.id) return;
-                  try {
-                    await invoke('encrypt_file', { filePath: file.path, password: "TopSecret#9900", userId: user.id });
-                    setIsSensitiveFileEncrypted(true);
-                    onClose(); // Close popup after encryption
-                  } catch (err) {
-                    setError(err as string);
-                  }
-                }}
-                className="bg-green-600 text-white px-4 py-2 rounded-md"
-              >
-                Encrypt File
-              </button> */}
               {error && <p className="text-red-500 mt-4">{error}</p>}
             </div>
           ) : (
@@ -169,3 +154,4 @@ function FileManager() {
 }
 
 export default FileManager
+

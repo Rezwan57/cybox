@@ -1,18 +1,47 @@
 use crate::db;
-use crate::models::bank::{BankAccount, CreateBankAccountRequest, UpdateCardRequest};
+use crate::models::bank::{BankAccount, CreateBankAccountRequest, UpdateCardRequest, Transaction};
 use crate::utils::generators;
 use mysql::{params, prelude::*};
 use tauri::command;
 
 #[command]
-pub fn award_points(user_id: u64, amount: i32) -> Result<(), String> {
+pub fn get_transactions(user_id: u64) -> Result<Vec<Transaction>, String> {
     let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
-    let query = "UPDATE bank_accounts SET balance = balance + :amount WHERE user_id = :user_id";
+    let query = "SELECT id, user_id, description, amount, created_at FROM bank_transactions WHERE user_id = :user_id ORDER BY created_at DESC";
     
-    conn.exec_drop(query, params! {
-        "amount" => amount,
-        "user_id" => user_id,
-    }).map_err(|e| e.to_string())?;
+    let transactions = conn.exec_map(
+        query,
+        params! { "user_id" => user_id },
+        |(id, user_id, description, amount, created_at): (u64, u64, String, String, chrono::NaiveDateTime)| {
+            Transaction {
+                id,
+                user_id,
+                description,
+                amount: amount.parse::<f64>().unwrap_or(0.0),
+                created_at: created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+            }
+        },
+    ).map_err(|e| e.to_string())?;
+
+    Ok(transactions)
+}
+
+#[command]
+pub fn award_points(user_id: u64, amount: i32, description: String) -> Result<(), String> {
+    let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
+    let mut tx = conn.start_transaction(mysql::TxOpts::default()).map_err(|e| e.to_string())?;
+
+    tx.exec_drop(
+        "UPDATE bank_accounts SET balance = balance + :amount WHERE user_id = :user_id",
+        params! { "amount" => amount, "user_id" => user_id },
+    ).map_err(|e| e.to_string())?;
+
+    tx.exec_drop(
+        "INSERT INTO bank_transactions (user_id, description, amount) VALUES (:user_id, :description, :amount)",
+        params! { "user_id" => user_id, "description" => description, "amount" => amount },
+    ).map_err(|e| e.to_string())?;
+
+    tx.commit().map_err(|e| e.to_string())?;
 
     Ok(())
 }

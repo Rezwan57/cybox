@@ -28,7 +28,7 @@ const LoginForm = () => {
         name: username.trim(), 
         password: password 
       });
-      login(user); // On success, update the global context
+      login(user);
     } catch (err) {
       console.error("Login error:", err);
       setError(typeof err === 'string' ? err : "Incorrect username or password");

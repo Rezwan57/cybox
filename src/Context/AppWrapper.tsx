@@ -15,12 +15,15 @@ interface AppContextType {
   points: number;
   setPoints: (points: any) => void;
   apps: Record<string, AppState>;
+  windowStack: string[];
   openApp: (app: string) => void;
   closeApp: (app: string) => void;
   minimizeApp: (app: string) => void;
   restoreApp: (app: string) => void;
+  bringToFront: (app: string) => void;
   purchasedServices: Service[];
   refetchTasks?: () => void;
+  taskUpdateTrigger: number;
   triggerTaskUpdate: () => void;
 }
 
@@ -41,31 +44,29 @@ const AppContextProvider = ({ children }: { children: ReactNode }) => {
     CybStore: { isOpen: false, isMinimized: false },
     "MD5 Cracker": { isOpen: false, isMinimized: false },
   });
+  const [windowStack, setWindowStack] = useState<string[]>([]);
+
+  const bringToFront = (app: string) => {
+    setWindowStack(prev => [...prev.filter(item => item !== app), app]);
+  };
 
   const openApp = (app: string) => {
     const service = purchasedServices.find(s => s.name === app);
     const isPurchasable = icons.find(i => i.name === app && !i.required);
 
     if (isPurchasable && !service) {
-      // Open the CybStore instead
-      setApps((prev) => ({
-        ...prev,
-        ["CybStore"]: { isOpen: true, isMinimized: false },
-      }));
+      setApps(prev => ({ ...prev, ["CybStore"]: { isOpen: true, isMinimized: false } }));
+      bringToFront("CybStore");
       return;
     }
 
-    setApps((prev) => ({
-      ...prev,
-      [app]: { isOpen: true, isMinimized: false },
-    }));
+    setApps(prev => ({ ...prev, [app]: { isOpen: true, isMinimized: false } }));
+    bringToFront(app);
   };
 
   const closeApp = (app: string) => {
-    setApps((prev) => ({
-      ...prev,
-      [app]: { ...prev[app], isOpen: false },
-    }));
+    setApps(prev => ({ ...prev, [app]: { ...prev[app], isOpen: false } }));
+    setWindowStack(prev => prev.filter(item => item !== app));
   };
 
   const minimizeApp = (app: string) => {
@@ -80,6 +81,7 @@ const AppContextProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       [app]: { ...prev[app], isMinimized: false },
     }));
+    bringToFront(app);
   };
 
   const [taskUpdateTrigger, setTaskUpdateTrigger] = useState(0);
@@ -89,7 +91,7 @@ const AppContextProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AppContext.Provider value={{ points, setPoints, apps, openApp, closeApp, minimizeApp, restoreApp, purchasedServices, refetchTasks: undefined, triggerTaskUpdate }}>
+    <AppContext.Provider value={{ points, setPoints, apps, windowStack, openApp, closeApp, minimizeApp, restoreApp, bringToFront, purchasedServices, refetchTasks: undefined, taskUpdateTrigger, triggerTaskUpdate }}>
       {children}
     </AppContext.Provider>
   );

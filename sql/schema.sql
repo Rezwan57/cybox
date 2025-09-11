@@ -55,6 +55,15 @@ CREATE TABLE bank_accounts (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE bank_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- New table for universal tasks
 CREATE TABLE universal_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -81,9 +90,9 @@ CREATE TABLE user_tasks (
 );
 
 INSERT INTO universal_tasks (id, title, description, learning_module, points, task_type, task_data, level) VALUES
-(1, 'Level 1: What is Cybersecurity?',
- 'Understand the fundamental concepts of cybersecurity and why it is important in the digital world.',
- 'Cybersecurity is the practice of protecting systems, networks, and programs from digital attacks. These cyberattacks are usually aimed at accessing, changing, or destroying sensitive information; extorting money from users; or interrupting normal business processes. A successful cybersecurity approach has multiple layers of protection spread across the computers, networks, programs, or data that one intends to keep safe.',
+(1, 'Level 1: Welcome to Cybox!',
+ 'Complete this introductory task to learn the basics of the Cybox interface.',
+ '<h3>Welcome, Agent!</h3><p>Your mission is to learn about cybersecurity by completing a series of tasks. Here’s a quick guide to your interface:</p><ul><li><b>The Desktop:</b> This is your main workspace. You can launch apps from the icons here.</li><li><b>The Dock:</b> The bar at the bottom shows your open applications and provides quick access to essentials like Home and Settings.</li><li><b>The Task App:</b> This is your most important tool! It lists all your objectives. Completing tasks earns you points you can spend in the CybStore.</li></ul><p>To complete this level, simply click the `Mark as Complete` button below.</p>',
  50, 'knowledge', NULL, 1),
 
 (2, 'Level 2: Create a Strong Password',
@@ -100,10 +109,11 @@ INSERT INTO universal_tasks (id, title, description, learning_module, points, ta
 
 (5, 'Level 5: The Multi-Hash Challenge', 'Your account is protected by a multi-hash authentication. You need to crack 5 MD5 hashes to get the passwords. Check your email from admin@cybox.app for the hashes.', NULL, 150, 'action', '{"passwords": ["User321", "adminIam230", "mod78mod", "Klein679", "Roco89080"]}', 5),
 
-(6, 'Level 6: Find the Hidden Message',
- 'A secret message is hidden in a file somewhere in the system. Find the file and submit its content.',
+(6, 'Level 6: The Encoded Message',
+ 'An operative left a critical message, but had to encode it to avoid detection. The message is split into two parts. Check your emails for a message from `intel@cybox.app` with the subject `Fragment 1/2`. The second fragment was appended to routine network traffic, so check other emails carefully.',
  NULL,
- 250, 'action', '{"file_path": "/var/log/hidden_message.txt", "content": "c_y_b_e_r_s_e_c_u_r_i_t_y"}', 6)
+ 350, 'action', '{"puzzle_type": "multi-stage-2"}', 6)
+
 
 
 CREATE TABLE services (
@@ -162,7 +172,7 @@ CREATE TABLE user_emails (
 
 INSERT INTO universal_emails (from_user, subject, body) VALUES
 ('admin@cyberbank.fake', 'Unusual login detected', 'We noticed a login from a new device. Click the link below to secure your account: <a href="cybox://bank/login?phishing=true" class="text-blue-400 underline">https://cyberbank.fake/secure</a>'),
-('support@securevpn.fake', 'Your subscription has expired', 'Renew your VPN today to stay protected. <a href="cybox://settings/network" class="text-blue-400 underline">Renew Now</a>'),
+('support@securevpn.fake', 'Your subscription has expired', 'Renew your VPN today to stay protected. <a href="cybox://settings/network" class="text-blue-400 underline">Renew Now</a><!-- Fragment 2/2: X3NfZV9jX3VfcmlfdHk= -->'),
 ('friend@trustme.fake', 'Check out this awesome game!', 'It’s a new hacking simulator. Totally legit ;) Download here: <a href="cybox://filemanager/download/malware.exe" class="text-blue-400 underline">malware.exe</a>'),
 ('admin@cybox.app', 'Level 4 Challenge Hashes', '<p>Hello,</p><p>Here are the hashes for the Level 4 challenge. One of these sets is the correct one. Good luck.</p><pre>261e672695a654895fed24313e5246de
 
@@ -179,7 +189,8 @@ d41d8cd98f00b204e9800998ecf8427e
 
 098f6bcd4621d373cade4e832627b4f6
 
-5f4dcc3b5aa765d61d8327deb882cf99</pre>')
+5f4dcc3b5aa765d61d8327deb882cf99</pre>'),
+('intel@cybox.app', 'Fragment 1/2', 'Here is the first part of the key, encoded in Base64: Y195X2JfZV9y')
 
 
 

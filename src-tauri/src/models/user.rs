@@ -43,7 +43,6 @@ pub struct LoginResponse {
 
 #[allow(dead_code)]
 impl User {
-    // Method to create a new User instance
     pub fn new(id: u64, device_name: String, name: String, ip: String, mac: String, created_at: NaiveDateTime) -> Self {
         User {
             id,

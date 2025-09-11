@@ -70,7 +70,7 @@ const MultiFactorChallenge = ({ task, onComplete }: { task: DisplayTask, onCompl
       <p className="text-neutral-300 mb-4">Enter the 5 passwords to proceed.</p>
       <div className="space-y-4 mb-6">
         {passwords.map((password, index) => (
-          <div key={index} className="flex items-center gap-2">
+          <div key={index} className="flex items-center gap-2 relative">
             <input
               type="text"
               value={password}
@@ -78,8 +78,8 @@ const MultiFactorChallenge = ({ task, onComplete }: { task: DisplayTask, onCompl
               placeholder={`Password ${index + 1}`}
               className="flex-grow p-2 rounded-md border border-neutral-700 bg-neutral-800 text-white"
             />
-            {validation[index] === 'correct' && <FaCheckCircle className="text-green-500" />}
-            {validation[index] === 'incorrect' && <FaTimesCircle className="text-red-500" />}
+            {validation[index] === 'correct' && <FaCheckCircle className="text-green-500 absolute top-[30%] right-3" />}
+            {validation[index] === 'incorrect' && <FaTimesCircle className="text-red-500 absolute top-[30%] right-3" />}
           </div>
         ))}
       </div>
@@ -118,7 +118,7 @@ const ActionTask = ({ task, onComplete, isLocked, userId }: { task: DisplayTask,
         result = await invoke('verify_password_crack', { password: inputValue });
       } else if (task.title.includes('Encrypt the Evidence')) {
         result = await invoke('verify_file_encryption', { filePath: task.task_data_parsed.file_path, userId });
-      } else if (task.title.includes('Find the Hidden Message')) {
+      } else if (task.level === 6) {
         result = await invoke('verify_hidden_file', { content: inputValue });
       } else if (task.title.includes('Spotting Phishing Emails')) {
         result = await invoke('verify_email_classification', { userId });
@@ -144,12 +144,9 @@ const ActionTask = ({ task, onComplete, isLocked, userId }: { task: DisplayTask,
       return <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Enter the password" className="w-full p-2 rounded-md border border-neutral-700 bg-neutral-800 text-white" />;
     } else if (task.title.includes('Encrypt the Evidence')) {
       return <p className="text-neutral-300">Click the button below when you have encrypted the file.</p>;
-    } else if (task.title.includes('Find the Hidden Message')) {
+    } else if (task.level === 6) {
       return <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="Enter the hidden message" className="w-full p-2 rounded-md border border-neutral-700 bg-neutral-800 text-white" />;
     } 
-    // else if (task.title.includes('Spotting Phishing Emails')) {
-    //     return <p className="text-neutral-300">Go to the Email app and classify the emails you think are suspicious.</p>;
-    // }
     return null;
   };
 
@@ -157,7 +154,7 @@ const ActionTask = ({ task, onComplete, isLocked, userId }: { task: DisplayTask,
     <div>
       <div className="mb-4">{renderTaskInput()}</div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      {task.status !== 'Completed' && task.level !== 4 && (
+      {task.status !== 'Completed' && task.level !== 5 && (
         <button
           onClick={handleSubmit}
           disabled={isLocked}
@@ -176,12 +173,6 @@ export default function TaskApp() {
   const { showNotification } = useNotification();
   const appContext = useContext(AppContext);
   
-  if (!appContext) {
-    return null;
-  }
-
-  const { openApp } = appContext;
-
   const [tasks, setTasks] = useState<DisplayTask[]>([]);
   const [selectedTask, setSelectedTask] = useState<DisplayTask | null>(null);
   const [loading, setLoading] = useState(true);
@@ -189,14 +180,14 @@ export default function TaskApp() {
 
   useEffect(() => {
     const fetchTasks = async () => {
+      if (!user) return;
+
       setLoading(true);
       setError(null);
       try {
         const universalTasks: UniversalTask[] = await invoke('get_universal_tasks');
         let userTasks: UserTask[] = [];
-        if (user) {
-          userTasks = await invoke('get_user_tasks', { userId: user.id });
-        }
+        userTasks = await invoke('get_user_tasks', { userId: user.id });
 
         const combinedTasks: DisplayTask[] = universalTasks.map(uTask => {
           const matchingUserTask = userTasks.find(ut => ut.universal_task_id === uTask.id);
@@ -212,7 +203,7 @@ export default function TaskApp() {
           };
         });
         setTasks(combinedTasks);
-        // Select the first non completed task by default
+
         const firstIncomplete = combinedTasks.find(t => t.status !== 'Completed');
         if (firstIncomplete) {
             setSelectedTask(firstIncomplete);
@@ -228,7 +219,13 @@ export default function TaskApp() {
       }
     };
     fetchTasks();
-  }, [user]);
+  }, [user, appContext?.taskUpdateTrigger]);
+
+  if (!appContext) {
+    return null; 
+  }
+
+  const { openApp } = appContext;
 
   const completeTask = async (universalTaskId: number, points: number) => {
     if (!user) return;
@@ -245,28 +242,6 @@ export default function TaskApp() {
     }
   };
 
-  // const highestUnlockedLevel = useMemo(() => {
-  //   const tasksByLevel: { [level: number]: DisplayTask[] } = {};
-  //   tasks.forEach(task => {
-  //     if (!tasksByLevel[task.level]) {
-  //       tasksByLevel[task.level] = [];
-  //     }
-  //     tasksByLevel[task.level].push(task);
-  //   });
-
-  //   const levels = Object.keys(tasksByLevel).map(Number).sort((a, b) => a - b);
-  //   for (const level of levels) {
-  //     const allPreviousLevelsComplete = levels
-  //       .filter(l => l < level)
-  //       .every(l => tasksByLevel[l].every(t => t.status === 'Completed'));
-      
-  //     if (!allPreviousLevelsComplete) {
-  //       return level -1 > 0 ? level -1 : 1; // Return the last fully completed level
-  //     }
-  //   }
-  //   // If all levels are complete, all are unlocked
-  //   return levels.length > 0 ? Math.max(...levels) : 1;
-  // }, [tasks]);
 
   const isLevelLocked = (level: number) => {
       if (level === 1) return false; 
@@ -310,7 +285,7 @@ export default function TaskApp() {
               <span className="text-lg font-semibold text-yellow-400">{selectedTask.points} Points</span>
             </div>
             <p className="text-lg font-semibold text-neutral-300 mb-2">Level: {selectedTask.level}</p>
-            <p className="mb-4 text-neutral-300">{selectedTask.description}</p>
+            <p className="mb-4 text-neutral-300 select-text">{selectedTask.description}</p>
             
             {isLevelLocked(selectedTask.level) ? (
                 <div className="flex items-center gap-2 text-yellow-500 bg-yellow-500/10 p-3 rounded-lg">
@@ -321,7 +296,7 @@ export default function TaskApp() {
               <>
                 <div className="mb-6 p-4 bg-neutral-800 rounded-lg">
                   <h3 className="font-bold text-lg mb-2 flex items-center gap-2"><FaBook /><span>Learning Module</span></h3>
-                  <p className="text-neutral-300">{selectedTask.learning_module}</p>
+                  <div className="text-neutral-300 prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: selectedTask.learning_module || '' }} />
                 </div>
                 {selectedTask.status !== 'Completed' && (
                   <button

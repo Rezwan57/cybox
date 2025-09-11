@@ -22,14 +22,26 @@ import { AppContext } from "@/Context/AppWrapper";
 type AppName = 'Console' | 'Files' | 'Browser' | 'Mail' | 'Settings' | 'WhiteBoard' | 'Bank' | 'Task' | 'CybStore' | 'Cracker';
 
 export default function Home() {
-  const { user } = useAuth(); // Get the user from the context
+  const { user } = useAuth(); 
   const appContext = useContext(AppContext);
 
   if (!appContext) {
-    return null; // or a loading spinner
+    return null;
   }
 
-  const { apps, openApp, closeApp, minimizeApp, restoreApp } = appContext;
+  const { apps, openApp, closeApp, minimizeApp, restoreApp, windowStack, bringToFront } = appContext;
+
+  const appComponents: { [key: string]: React.ReactNode } = {
+    Console: <Console />,
+    Files: <FileManager />,
+    Mail: <EmailApp />,
+    Bank: <BankApp />,
+    Browser: <Browser />,
+    Settings: <Settings />,
+    Task: <TaskApp />,
+    CybStore: <CybStore />,
+    "MD5 Cracker": <CrackerApp />,
+  };
 
   return (
     <NotificationProvider>
@@ -55,115 +67,22 @@ export default function Home() {
           />
 
           {/* Render App Windows */}
-          {apps["Console"].isOpen && (
-            <AppWindow
-              title="Console"
-              isMinimized={apps["Console"].isMinimized}
-              onClose={() => closeApp("Console")}
-              onMinimize={() => minimizeApp("Console")}
-              onMaximize={() => restoreApp("Console")}
-            >
-              <Console />
-            </AppWindow>
+          {Object.entries(apps).map(([appName, appState]) =>
+            appState.isOpen && (
+              <AppWindow
+                key={appName}
+                title={appName}
+                isMinimized={appState.isMinimized}
+                onClose={() => closeApp(appName)}
+                onMinimize={() => minimizeApp(appName)}
+                onMaximize={() => restoreApp(appName)}
+                onFocus={() => bringToFront(appName)}
+                zIndex={40 + windowStack.indexOf(appName)}
+              >
+                {appComponents[appName]}
+              </AppWindow>
+            )
           )}
-
-          {apps["Files"].isOpen && (
-            <AppWindow
-              title="Files"
-              isMinimized={apps["Files"].isMinimized}
-              onClose={() => closeApp("Files")}
-              onMinimize={() => minimizeApp("Files")}
-              onMaximize={() => restoreApp("Files")}
-            >
-              <FileManager />
-            </AppWindow>
-          )}
-
-          {apps["Mail"].isOpen && (
-            <AppWindow
-              title="Mail"
-              isMinimized={apps["Mail"].isMinimized}
-              onClose={() => closeApp("Mail")}
-              onMinimize={() => minimizeApp("Mail")}
-              onMaximize={() => restoreApp("Mail")}
-            >
-              <EmailApp />
-            </AppWindow>
-          )}
-
-          {apps["Bank"].isOpen && (
-            <AppWindow
-              title="Bank"
-              isMinimized={apps["Bank"].isMinimized}
-              onClose={() => closeApp("Bank")}
-              onMinimize={() => minimizeApp("Bank")}
-              onMaximize={() => restoreApp("Bank")}
-            >
-              <BankApp />
-            </AppWindow>
-          )}
-
-          {apps["Browser"].isOpen && (
-            <AppWindow
-              title="Browser"
-              isMinimized={apps["Browser"].isMinimized}
-              onClose={() => closeApp("Browser")}
-              onMinimize={() => minimizeApp("Browser")}
-              onMaximize={() => restoreApp("Browser")}
-            >
-              <Browser />
-            </AppWindow>
-          )}
-
-          {apps["Settings"].isOpen && (
-            <AppWindow
-              title="Settings"
-              isMinimized={apps["Settings"].isMinimized}
-              onClose={() => closeApp("Settings")}
-              onMinimize={() => minimizeApp("Settings")}
-              onMaximize={() => restoreApp("Settings")}
-            >
-              <Settings />
-            </AppWindow>
-          )}
-
-          
-
-          {apps["Task"].isOpen && (
-            <AppWindow
-              title="Task"
-              isMinimized={apps["Task"].isMinimized}
-              onClose={() => closeApp("Task")}
-              onMinimize={() => minimizeApp("Task")}
-              onMaximize={() => restoreApp("Task")}
-            >
-              <TaskApp />
-            </AppWindow>
-          )}
-
-          {apps["CybStore"].isOpen && (
-          <AppWindow
-            title="CybStore"
-            isMinimized={apps["CybStore"].isMinimized}
-            onClose={() => closeApp("CybStore")}
-            onMinimize={() => minimizeApp("CybStore")}
-            onMaximize={() => restoreApp("CybStore")}
-          >
-            <CybStore />
-          </AppWindow>
-        )}
-
-        {apps["MD5 Cracker"].isOpen && (
-          <AppWindow
-            title="MD5 Cracker"
-            isMinimized={apps["MD5 Cracker"].isMinimized}
-            onClose={() => closeApp("MD5 Cracker")}
-            onMinimize={() => minimizeApp("MD5 Cracker")}
-            onMaximize={() => restoreApp("MD5 Cracker")}
-          >
-            <CrackerApp />
-          </AppWindow>
-        )}
         </main>
       </div>
     </NotificationProvider>

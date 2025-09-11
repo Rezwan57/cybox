@@ -24,8 +24,8 @@ log = "0.4"
 tauri = { version = "2.5.0", features = [] }
 tauri-plugin-log = "2.0.0-rc"
 rusqlite = { version = "0.31.0", features = ["bundled"] }
-mysql = "24.0.0"
 mysql_common = { version = "0.30.6", features = ["chrono"] }
+mysql = "24.0.0"
 dotenvy = "0.15"
 rand = "0.8"
 sha2 = "0.10"

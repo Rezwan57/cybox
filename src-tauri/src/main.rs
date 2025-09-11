@@ -30,6 +30,7 @@ fn main() {
             handlers::auth::reset_password,
             handlers::bank::create_bank_account,
             handlers::bank::get_bank_details,
+            handlers::bank::get_transactions,
             handlers::bank::update_card_details,
             handlers::bank::generate_new_card,
             // Service Commands

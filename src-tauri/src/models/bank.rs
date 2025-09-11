@@ -12,6 +12,15 @@ pub struct BankAccount {
     pub created_at: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Transaction {
+    pub id: u64,
+    pub user_id: u64,
+    pub description: String,
+    pub amount: f64,
+    pub created_at: String,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct CreateBankAccountRequest {
     pub user_id: u64,

@@ -9,8 +9,10 @@ import {
 } from 'react-icons/fa'
 import { invoke } from '@tauri-apps/api/core'
 import { useAuth, Service } from '@/Context/AuthContext'
+import { useNotification } from '@/Context/NotificationContext'
+import { AppContext } from '@/Context/AppWrapper'
 
-// --- Components ---
+
 const Switch = ({ checked, onChange }: { checked: boolean, onChange: (checked: boolean) => void }) => (
   <button
     onClick={() => onChange(!checked)}
@@ -27,7 +29,6 @@ const Switch = ({ checked, onChange }: { checked: boolean, onChange: (checked: b
 );
 
 
-// --- TypeScript Interfaces ---
 interface Settings {
   user_id: number;
   two_fa: boolean;
@@ -92,10 +93,12 @@ const ChangePasswordModal = ({
   isOpen,
   onClose,
   username,
+  triggerTaskUpdate,
 }: {
   isOpen: boolean;
   onClose: () => void;
   username: string;
+  triggerTaskUpdate: () => void;
 }) => {
   const { user } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
@@ -138,7 +141,8 @@ const ChangePasswordModal = ({
       setNewPassword("");
       setConfirmPassword("");
       if (user) {
-        invoke("complete_task", { taskId: 2, userId: user.id });
+        await invoke("complete_task", { taskId: 2, userId: user.id });
+        triggerTaskUpdate(); // Refresh tasks 
       }
     } catch (err) {
       setError(err as string);
@@ -201,6 +205,8 @@ const ChangePasswordModal = ({
 
 export default function SettingsApp() {
   const { user, purchasedServices } = useAuth()
+  const appContext = React.useContext(AppContext);
+  const triggerTaskUpdate = appContext?.triggerTaskUpdate;
   const [activeSection, setActiveSection] = useState<Section>('Security')
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true);
@@ -556,6 +562,7 @@ export default function SettingsApp() {
         isOpen={isChangePasswordModalOpen}
         onClose={() => setChangePasswordModalOpen(false)}
         username={user.name}
+        triggerTaskUpdate={triggerTaskUpdate || (() => {})}
       />
     )}
     </div>

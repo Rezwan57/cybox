@@ -37,16 +37,16 @@ pub fn is_file_encrypted(file_path: String, user_id: u64) -> Result<bool, String
     Ok(count > 0)
 }
 
-#[command]
-pub fn delete_encrypted_file_entry(file_path: String, user_id: u64) -> Result<String, String> {
-    let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
-    conn.exec_drop(
-        "DELETE FROM encrypted_files WHERE file_path = :file_path AND user_id = :user_id",
-        params! { "file_path" => &file_path, "user_id" => user_id },
-    )
-    .map_err(|e| e.to_string())?;
-    Ok("Encrypted file entry deleted successfully.".to_string())
-}
+// #[command]
+// pub fn delete_encrypted_file_entry(file_path: String, user_id: u64) -> Result<String, String> {
+//     let mut conn = db::get_db_connection().map_err(|e| e.to_string())?;
+//     conn.exec_drop(
+//         "DELETE FROM encrypted_files WHERE file_path = :file_path AND user_id = :user_id",
+//         params! { "file_path" => &file_path, "user_id" => user_id },
+//     )
+//     .map_err(|e| e.to_string())?;
+//     Ok("Encrypted file entry deleted successfully.".to_string())
+// }
 
 #[command]
 pub fn decrypt_file_content(file_path: String, password: String) -> Result<String, String> {
