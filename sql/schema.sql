@@ -64,29 +64,28 @@ CREATE TABLE bank_transactions (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- New table for universal tasks
+
 CREATE TABLE universal_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     learning_module TEXT,
     points INT NOT NULL,
-    task_type VARCHAR(50) NOT NULL DEFAULT 'knowledge', -- 'knowledge' or 'action'
-    task_data TEXT, -- JSON data for action-based tasks
+    task_type VARCHAR(50) NOT NULL DEFAULT 'knowledge', 
+    task_data TEXT,
     level INT NOT NULL DEFAULT 1
 );
 
--- Modified tasks table to track user-specific progress on universal tasks
 CREATE TABLE user_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     universal_task_id INT NOT NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'To Do', -- e.g., 'To Do', 'In Progress', 'Completed'
+    status VARCHAR(50) NOT NULL DEFAULT 'To Do', 
     completed_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (universal_task_id) REFERENCES universal_tasks(id) ON DELETE CASCADE,
-    UNIQUE (user_id, universal_task_id) -- Ensure a user can only have one entry per universal task
+    UNIQUE (user_id, universal_task_id) 
 );
 
 INSERT INTO universal_tasks (id, title, description, learning_module, points, task_type, task_data, level) VALUES
@@ -163,7 +162,7 @@ CREATE TABLE user_emails (
     user_id INT NOT NULL,
     universal_email_id INT NOT NULL,
     is_read BOOLEAN NOT NULL DEFAULT false,
-    classification VARCHAR(50) NOT NULL DEFAULT 'none', -- 'none', 'spam', 'phishing'
+    classification VARCHAR(50) NOT NULL DEFAULT 'none', -- none, spam,   phishing
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (universal_email_id) REFERENCES universal_emails(id) ON DELETE CASCADE,
