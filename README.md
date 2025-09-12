@@ -32,7 +32,7 @@ npm install
 ```
 ### 3. Create .env file in the project directory and add
 ```bash
-
+DATABASE_URL=mysql://root:EXfcIzMizHCSmtjRuloLfFwGPWhQLlxF@yamabiko.proxy.rlwy.net:42351/railway
 ```
 ### 4. Run the Tauri app (desktop)
 ```bash
